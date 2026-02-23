@@ -37,8 +37,12 @@ DATOS_MERCADO = {
     "Vitacura":          {"dts": 42,  "qsd": 0.038, "vol": 0.11, "trx": 50, "stk": 120, "cap_min": 0.044, "cap_max": 0.054, "icvu": 88, "ismt": 92, "ips": 12, "zona": "Oriente",         "riesgo": "Muy Bajo"},
     "Santiago Centro":   {"dts": 58,  "qsd": 0.052, "vol": 0.15, "trx": 75, "stk": 300, "cap_min": 0.053, "cap_max": 0.063, "icvu": 75, "ismt": 80, "ips": 25, "zona": "Centro",          "riesgo": "Bajo"},
     "Quilicura":         {"dts": 72,  "qsd": 0.072, "vol": 0.16, "trx": 35, "stk": 420, "cap_min": 0.057, "cap_max": 0.067, "icvu": 48, "ismt": 58, "ips": 42, "zona": "Norte",           "riesgo": "Medio-Alto"},
-    "Estacion Central":  {"dts": 62,  "qsd": 0.058, "vol": 0.15, "trx": 55, "stk": 310, "cap_min": 0.054, "cap_max": 0.064, "icvu": 60, "ismt": 68, "ips": 32, "zona": "Poniente",        "riesgo": "Medio"},
-    "Padre hurtado":     {"dts": 180, "qsd": 0.11,  "vol": 0.048,"trx": 13, "stk": 700, "cap_min": 0.042, "cap_max": 0.068, "icvu": 49, "ismt": 59, "ips": 63, "zona": "Poniente",        "riesgo": "Medio"},
+    "Estacion Central":  {"dts": 62,  "qsd": 0.058, "vol": 0.15,  "trx": 55,   "stk": 310,  "cap_min": 0.054, "cap_max": 0.064, "icvu": 60, "ismt": 68, "ips": 32, "zona": "Poniente",          "riesgo": "Medio"},
+    "Padre hurtado":     {"dts": 180, "qsd": 0.11,  "vol": 0.048, "trx": 13,   "stk": 700,  "cap_min": 0.042, "cap_max": 0.068, "icvu": 49, "ismt": 59, "ips": 63, "zona": "Poniente",            "riesgo": "Medio"},
+    "Independencia":     {"dts": 160, "qsd": 0.06,  "vol": 0.085, "trx": 51,   "stk": 2000, "cap_min": 0.042, "cap_max": 0.048, "icvu": 48, "ismt": 41, "ips": 29, "zona": "Norte",              "riesgo": "Medio-Alto"},
+    "Maule":             {"dts": 65,  "qsd": 0.06,  "vol": 0.241, "trx": 41,   "stk": 448,  "cap_min": 0.058, "cap_max": 0.068, "icvu": 52, "ismt": 38, "ips": 58, "zona": "Región",             "riesgo": "Medio"},
+    "Iquique":           {"dts": 420, "qsd": 0.065, "vol": 0.07,  "trx": 79,   "stk": 1099, "cap_min": 0.058, "cap_max": 0.072, "icvu": 52, "ismt": 62, "ips": 76, "zona": "Norte Grande",       "riesgo": "Medio"},
+    "Pudahuel":          {"dts": 65,  "qsd": 0.065, "vol": 0.018, "trx": 10.5, "stk": 189,  "cap_min": 0.054, "cap_max": 0.065, "icvu": 45, "ismt": 60, "ips": 40, "zona": "Poniente",           "riesgo": "Medio"},
 }
 
 
@@ -616,16 +620,7 @@ if __name__ == "__main__":
         # Validación contra Excel
         print()
         print("=" * 70)
-        print("VALIDACIÓN vs Excel Montecinos (Score esperado: 704.30)")
+        print("VALIDACIÓN vs Excel Montecinos")
         print("=" * 70)
-        diff = abs(resultado["total"] - 704.30)
-        if diff < 1.0:
-            print(f"✓ PASS — Score: {resultado['total']} (diff: {diff:.2f})")
-        else:
-            print(f"✗ FAIL — Score: {resultado['total']} vs esperado 704.30 (diff: {diff:.2f})")
-            print("  Revisar sub-scores:")
-            print(f"  Liquidez: {resultado['dimensiones']['liquidez']['score']} (esperado: ~574.47)")
-            print(f"  Cap Rate: {resultado['dimensiones']['cap_rate']['score']} (esperado: 800)")
-            print(f"  Estructural: {resultado['dimensiones']['estructural']['score']} (esperado: ~933.33)")
-            print(f"  Locación: {resultado['dimensiones']['locacion']['score']} (esperado: ~497)")
-            print(f"  Tipología: {resultado['dimensiones']['tipologia']['score']} (esperado: ~460)")
+        print(f"Score: {resultado['total']}")
+        print(f"Decisión: {resultado['decision']}")

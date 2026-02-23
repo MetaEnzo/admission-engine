@@ -116,7 +116,7 @@ class TestLookupComuna:
         assert r["dts"] == 180
 
     def test_13_comunas(self):
-        assert len(DATOS_MERCADO) == 13
+        assert len(DATOS_MERCADO) == 17
 
 
 # ============================================================
@@ -528,8 +528,8 @@ class TestRunAssetScore:
             "renta_cliente_uf": 24.0,
         }
 
-    def test_montecinos_score_704(self, montecinos):
-        """Validación contra Excel: score debe ser ~704.30"""
+    def test_montecinos_score(self, montecinos):
+        """Validación contra Excel Montecinos (dato canónico PH): score ~704"""
         r = run_asset_score(montecinos)
         assert "error" not in r
         assert abs(r["total"] - 704.30) < 1.0
@@ -580,7 +580,7 @@ class TestRunAssetScore:
         assert m["comuna"] == "Padre hurtado"
         assert m["fase_economica"] == "NORMAL"
         assert m["trimestre"] == "Q3"
-        assert m["n_comunas_disponibles"] == 13
+        assert m["n_comunas_disponibles"] == 17
 
     def test_comuna_invalida(self):
         activo = {"comuna": "Rancagua", "precio_uf": 1000}
@@ -600,7 +600,7 @@ class TestRunAssetScore:
 # ============================================================
 class TestDatosMercado:
     def test_13_comunas(self):
-        assert len(DATOS_MERCADO) == 13
+        assert len(DATOS_MERCADO) == 17
 
     def test_campos_requeridos(self):
         campos = ["dts", "qsd", "vol", "trx", "stk", "cap_min", "cap_max",
