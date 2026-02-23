@@ -1,0 +1,333 @@
+/* ==========================================================
+   PROPIO OS — Brand CSS (extracted from similarity_matching_v2)
+   + Form styles for admission engine web UI
+   ========================================================== */
+
+:root {
+    --propio-orange: #E8632B;
+    --propio-blue: #1B2A4A;
+    --propio-light: #F7F8FA;
+    --propio-green: #27AE60;
+    --propio-yellow: #F39C12;
+    --propio-red: #E74C3C;
+    --propio-gray: #7F8C8D;
+    --propio-purple: #9B59B6;
+    --card-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --radius: 12px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--propio-light); color: var(--propio-blue); line-height: 1.5; }
+
+/* Header */
+.header { background: linear-gradient(135deg, var(--propio-blue) 0%, #2C3E6A 100%); color: white; padding: 24px 32px; display: flex; align-items: center; justify-content: space-between; }
+.header h1 { font-size: 20px; font-weight: 600; }
+.header .badge { background: var(--propio-orange); color: white; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+.container { max-width: 1000px; margin: 0 auto; padding: 24px; }
+
+/* Cards */
+.card { background: white; border-radius: var(--radius); box-shadow: var(--card-shadow); padding: 24px; margin-bottom: 20px; }
+.card-orange { border-left: 4px solid var(--propio-orange); }
+.card-green { border-left: 4px solid var(--propio-green); }
+.card-blue { border-left: 4px solid #3498DB; }
+.card-purple { border-left: 4px solid var(--propio-purple); }
+.card h2 { font-size: 11px; color: var(--propio-gray); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.card h3 { font-size: 15px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+/* Metrics */
+.metrics-row { display: flex; gap: 20px; flex-wrap: wrap; }
+.metric { flex: 1; min-width: 100px; }
+.metric .label { font-size: 10px; color: var(--propio-gray); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+.metric .value { font-size: 20px; font-weight: 700; }
+.metric .value.green { color: var(--propio-green); }
+.metric .value.yellow { color: var(--propio-yellow); }
+.metric .value.red { color: var(--propio-red); }
+
+/* Gates */
+.gates-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.gate { padding: 14px 16px; border-radius: 8px; border: 1px solid #EEF0F4; }
+.gate.pass { background: #F0FFF4; border-color: #C6F6D5; }
+.gate.fail { background: #FFF5F5; border-color: #FED7D7; }
+.gate .gate-name { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; color: var(--propio-gray); margin-bottom: 4px; }
+.gate .gate-value { font-size: 18px; font-weight: 700; }
+.gate .gate-status { font-size: 11px; font-weight: 600; margin-top: 4px; }
+.gate.pass .gate-status { color: var(--propio-green); }
+.gate.fail .gate-status { color: var(--propio-red); }
+
+/* Table */
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th { text-align: left; padding: 10px 10px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--propio-gray); border-bottom: 2px solid #EEF0F4; font-weight: 600; }
+thead th.right { text-align: right; }
+tbody tr { transition: background 0.15s; }
+tbody tr:hover { background: #F7F8FA; }
+tbody td { padding: 11px 10px; border-bottom: 1px solid #F0F1F5; vertical-align: middle; }
+tbody td.right { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Rank badges */
+.rank { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; color: white; }
+.rank-1 { background: var(--propio-orange); }
+.rank-2 { background: #D4732E; }
+.rank-3 { background: #BC8040; }
+.rank-4 { background: #8D9BAA; }
+.rank-5 { background: #A5B0BD; }
+
+/* Outcome badges */
+.outcome-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.outcome-exit { background: #E8F8EF; color: #1E8449; }
+.outcome-activo { background: #EBF5FB; color: #2471A3; }
+.outcome-problematico { background: #FDEDEC; color: #C0392B; }
+
+/* Similarity bars */
+.sim-bar-container { display: flex; align-items: center; gap: 8px; }
+.sim-bar { flex: 1; height: 6px; background: #EEF0F4; border-radius: 3px; overflow: hidden; }
+.sim-bar-fill { height: 100%; border-radius: 3px; }
+.sim-bar-fill.high { background: var(--propio-green); }
+.sim-bar-fill.mid { background: var(--propio-yellow); }
+.sim-bar-fill.low { background: var(--propio-red); }
+.sim-value { font-weight: 700; font-size: 13px; min-width: 44px; text-align: right; }
+
+/* Brief */
+.brief-text { font-size: 14px; line-height: 1.7; color: #34495E; }
+.brief-text p { margin-bottom: 10px; }
+.brief-text p:last-child { margin-bottom: 0; }
+.confidence-tag { display: inline-block; padding: 4px 14px; border-radius: 16px; font-size: 12px; font-weight: 700; margin-top: 8px; }
+.confidence-alta { background: #E8F8EF; color: #1E8449; }
+.confidence-moderada { background: #FEF9E7; color: #B7950B; }
+.confidence-atencion { background: #FDEDEC; color: #C0392B; }
+
+/* Metadata footer */
+.metadata { font-size: 11px; color: var(--propio-gray); text-align: center; padding: 16px; border-top: 1px solid #EEF0F4; margin-top: 8px; }
+.metadata span { margin: 0 8px; }
+
+/* ==========================================================
+   FORM STYLES
+   ========================================================== */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: var(--propio-gray);
+    margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group select {
+    padding: 10px 12px;
+    border: 1px solid #DDE1E7;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--propio-blue);
+    background: white;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--propio-orange);
+    box-shadow: 0 0 0 3px rgba(232, 99, 43, 0.12);
+}
+
+.form-group input::placeholder {
+    color: #BDC3C7;
+}
+
+.form-group .hint {
+    font-size: 10px;
+    color: #BDC3C7;
+    margin-top: 4px;
+}
+
+/* Collapsible sections */
+details {
+    margin-top: 16px;
+}
+
+details summary {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--propio-blue);
+    cursor: pointer;
+    padding: 10px 0;
+    border-top: 1px solid #EEF0F4;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+details summary::-webkit-details-marker { display: none; }
+
+details summary::before {
+    content: "\25B6";
+    font-size: 10px;
+    color: var(--propio-gray);
+    transition: transform 0.2s;
+}
+
+details[open] summary::before {
+    transform: rotate(90deg);
+}
+
+details .form-grid {
+    margin-top: 12px;
+}
+
+/* Submit button */
+.btn-evaluar {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    margin-top: 24px;
+    background: linear-gradient(135deg, var(--propio-orange) 0%, #D4572A 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: transform 0.1s, box-shadow 0.2s;
+}
+
+.btn-evaluar:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(232, 99, 43, 0.3);
+}
+
+.btn-evaluar:active {
+    transform: translateY(0);
+}
+
+/* Verdict banner */
+.verdict-banner {
+    padding: 20px 24px;
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.verdict-pass {
+    background: linear-gradient(135deg, #27AE60 0%, #229954 100%);
+    color: white;
+}
+
+.verdict-fail {
+    background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%);
+    color: white;
+}
+
+.verdict-banner h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-bottom: 4px;
+}
+
+.verdict-banner p {
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+/* Marker sections */
+.marker-card {
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 16px;
+}
+
+.marker-m1 { background: #F8F4FC; }
+.marker-m2 { background: #F0F7FD; }
+
+.marker-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.marker-badge {
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+}
+
+.marker-badge-m1 { background: var(--propio-purple); }
+.marker-badge-m2 { background: #2980B9; }
+
+.marker-title {
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.marker-level {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: 12px;
+}
+
+.marker-level-1 { background: #E8F8EF; color: #1E8449; }
+.marker-level-2 { background: #EBF5FB; color: #2471A3; }
+.marker-level-3 { background: #FEF9E7; color: #B7950B; }
+.marker-level-4 { background: #FDEDEC; color: #C0392B; }
+
+.marker-narrative {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #34495E;
+}
+
+.marker-unavailable {
+    background: #F5F5F5;
+    border-radius: 8px;
+    padding: 14px;
+    opacity: 0.6;
+    font-size: 12px;
+    color: #95A5A6;
+}
+
+/* Truncation banner */
+.trunca-banner {
+    background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%);
+    color: white;
+    padding: 16px 24px;
+    border-radius: var(--radius);
+    margin-top: 16px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .container { padding: 12px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .metrics-row { gap: 12px; }
+    .metric .value { font-size: 16px; }
+    .gates-grid { grid-template-columns: 1fr; }
+    table { font-size: 12px; }
+    .marker-header { flex-wrap: wrap; }
+    .marker-level { margin-left: 0; margin-top: 4px; }
+}

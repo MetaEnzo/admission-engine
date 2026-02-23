@@ -1,0 +1,381 @@
+{
+  "postulante": {
+    "nombre": "Andrés Montecinos",
+    "pd": 0.05,
+    "pie": 0.1,
+    "ratio": 0.367,
+    "tipo": 1,
+    "cr_acido": 1.39,
+    "cv": 0.006
+  },
+  "gates": {
+    "detalle": [
+      {
+        "nombre": "Cobertura Ácida",
+        "valor": 1.39,
+        "threshold": 1.0,
+        "pass": true,
+        "detalle": "min(ingreso recurrente) / cuota = 1.39x"
+      },
+      {
+        "nombre": "CV Ingreso (Dependiente)",
+        "valor": 0.006,
+        "threshold": 0.08,
+        "pass": true,
+        "detalle": "CV = 0.006 < 0.08 ✓"
+      },
+      {
+        "nombre": "PD Sinacofi",
+        "valor": 0.05,
+        "threshold": 0.1,
+        "pass": true,
+        "detalle": "PD = 5.0% < 10% ✓"
+      }
+    ],
+    "all_pass": true
+  },
+  "matching": {
+    "top5": [
+      {
+        "nombre": "Adrián Zabaleta",
+        "pd": 0.05,
+        "pie": 0.123,
+        "ratio": 0.349,
+        "tipo": "Dep",
+        "cr_acido": 1.05,
+        "cv": 0.0,
+        "outcome": "exit",
+        "detalle": "Enviado Coopeuch, Renta Nacional",
+        "distancia": 0.036,
+        "similaridad": 96.4
+      },
+      {
+        "nombre": "Brenda Ramírez",
+        "pd": 0.05,
+        "pie": 0.07,
+        "ratio": 0.297,
+        "tipo": "Dep",
+        "cr_acido": 3.9,
+        "cv": 0.027,
+        "outcome": "exit",
+        "detalle": "Pre-aprobada Coopeuch",
+        "distancia": 0.1119,
+        "similaridad": 88.8
+      },
+      {
+        "nombre": "Yenny Barreto",
+        "pd": 0.05,
+        "pie": 0.113,
+        "ratio": 0.27,
+        "tipo": "Dep",
+        "cr_acido": 1.76,
+        "cv": 0.012,
+        "outcome": "exit",
+        "detalle": "Aprobada Evoluciona, Renta Nacional",
+        "distancia": 0.1299,
+        "similaridad": 87.0
+      },
+      {
+        "nombre": "Hugo Ayala",
+        "pd": 0.1,
+        "pie": 0.07,
+        "ratio": 0.435,
+        "tipo": "Dep",
+        "cr_acido": 1.91,
+        "cv": 0.05,
+        "outcome": "activo",
+        "detalle": "Gendarmería, bonos retroactivos",
+        "distancia": 0.1556,
+        "similaridad": 84.4
+      },
+      {
+        "nombre": "Oscar Paduro",
+        "pd": 0.1,
+        "pie": 0.2124,
+        "ratio": 0.28,
+        "tipo": "Dep",
+        "cr_acido": 3.57,
+        "cv": 0.013,
+        "outcome": "exit",
+        "detalle": "Pensionado Armada + U. Chile",
+        "distancia": 0.1623,
+        "similaridad": 83.8
+      }
+    ],
+    "ranking_completo": [
+      {
+        "nombre": "Adrián Zabaleta",
+        "pd": 0.05,
+        "pie": 0.123,
+        "ratio": 0.349,
+        "tipo": "Dep",
+        "cr_acido": 1.05,
+        "cv": 0.0,
+        "outcome": "exit",
+        "detalle": "Enviado Coopeuch, Renta Nacional",
+        "distancia": 0.036,
+        "similaridad": 96.4
+      },
+      {
+        "nombre": "Brenda Ramírez",
+        "pd": 0.05,
+        "pie": 0.07,
+        "ratio": 0.297,
+        "tipo": "Dep",
+        "cr_acido": 3.9,
+        "cv": 0.027,
+        "outcome": "exit",
+        "detalle": "Pre-aprobada Coopeuch",
+        "distancia": 0.1119,
+        "similaridad": 88.8
+      },
+      {
+        "nombre": "Yenny Barreto",
+        "pd": 0.05,
+        "pie": 0.113,
+        "ratio": 0.27,
+        "tipo": "Dep",
+        "cr_acido": 1.76,
+        "cv": 0.012,
+        "outcome": "exit",
+        "detalle": "Aprobada Evoluciona, Renta Nacional",
+        "distancia": 0.1299,
+        "similaridad": 87.0
+      },
+      {
+        "nombre": "Hugo Ayala",
+        "pd": 0.1,
+        "pie": 0.07,
+        "ratio": 0.435,
+        "tipo": "Dep",
+        "cr_acido": 1.91,
+        "cv": 0.05,
+        "outcome": "activo",
+        "detalle": "Gendarmería, bonos retroactivos",
+        "distancia": 0.1556,
+        "similaridad": 84.4
+      },
+      {
+        "nombre": "Oscar Paduro",
+        "pd": 0.1,
+        "pie": 0.2124,
+        "ratio": 0.28,
+        "tipo": "Dep",
+        "cr_acido": 3.57,
+        "cv": 0.013,
+        "outcome": "exit",
+        "detalle": "Pensionado Armada + U. Chile",
+        "distancia": 0.1623,
+        "similaridad": 83.8
+      },
+      {
+        "nombre": "Gabriela González",
+        "pd": 0.05,
+        "pie": 0.267,
+        "ratio": 0.317,
+        "tipo": "Dep",
+        "cr_acido": 2.14,
+        "cv": 0.029,
+        "outcome": "exit",
+        "detalle": "Aprobada BancoEstado",
+        "distancia": 0.1818,
+        "similaridad": 81.8
+      },
+      {
+        "nombre": "Joaquín Morán",
+        "pd": 0.25,
+        "pie": 0.133,
+        "ratio": null,
+        "tipo": "Dep",
+        "cr_acido": 2.39,
+        "cv": 0.029,
+        "outcome": "activo",
+        "detalle": "Recién entró",
+        "distancia": 0.1904,
+        "similaridad": 81.0
+      },
+      {
+        "nombre": "Álvaro Alvarado",
+        "pd": 0.25,
+        "pie": 0.13,
+        "ratio": 0.317,
+        "tipo": "Dep",
+        "cr_acido": 1.9,
+        "cv": 0.06,
+        "outcome": "activo",
+        "detalle": "PD sobreestimada, RBI 100",
+        "distancia": 0.223,
+        "similaridad": 77.7
+      },
+      {
+        "nombre": "María Pérez",
+        "pd": 0.05,
+        "pie": 0.396,
+        "ratio": 0.526,
+        "tipo": "Dep",
+        "cr_acido": 2.21,
+        "cv": 0.042,
+        "outcome": "activo",
+        "detalle": "Pie muy alto, ratio muy alto",
+        "distancia": 0.3629,
+        "similaridad": 63.7
+      },
+      {
+        "nombre": "Juan García",
+        "pd": 0.05,
+        "pie": 0.15,
+        "ratio": 0.274,
+        "tipo": "Indep",
+        "cr_acido": 2.2,
+        "cv": 0.0,
+        "outcome": "activo",
+        "detalle": "Boletas fijas",
+        "distancia": 0.4006,
+        "similaridad": 59.9
+      },
+      {
+        "nombre": "Belén Vidal",
+        "pd": 0.0407,
+        "pie": 0.091,
+        "ratio": 0.297,
+        "tipo": "Indep",
+        "cr_acido": 1.78,
+        "cv": 0.306,
+        "outcome": "exit",
+        "detalle": "Aprobada Renta Nacional, pendiente BancoEstado",
+        "distancia": 0.4075,
+        "similaridad": 59.3
+      },
+      {
+        "nombre": "Gerardo Aguayo",
+        "pd": 0.05,
+        "pie": 0.1,
+        "ratio": 0.298,
+        "tipo": "Indep",
+        "cr_acido": 1.81,
+        "cv": 0.31,
+        "outcome": "activo",
+        "detalle": "Shock=Recovered, CV alto (honorarios)",
+        "distancia": 0.4075,
+        "similaridad": 59.2
+      },
+      {
+        "nombre": "Valentín Vidal",
+        "pd": 0.05,
+        "pie": 0.1,
+        "ratio": 0.429,
+        "tipo": "Indep",
+        "cr_acido": 2.14,
+        "cv": 0.353,
+        "outcome": "activo",
+        "detalle": "Independiente, ratio alto pero RBI 100",
+        "distancia": 0.4117,
+        "similaridad": 58.8
+      },
+      {
+        "nombre": "Alicia Vega",
+        "pd": 0.05,
+        "pie": 0.299,
+        "ratio": 0.211,
+        "tipo": "Indep",
+        "cr_acido": 2.12,
+        "cv": 0.08,
+        "outcome": "activo",
+        "detalle": "Engine v2.1: Deteriorating+Fragile",
+        "distancia": 0.4703,
+        "similaridad": 53.0
+      },
+      {
+        "nombre": "Pablo Pérez",
+        "pd": 0.83,
+        "pie": 0.2,
+        "ratio": 0.246,
+        "tipo": "Indep",
+        "cr_acido": 0.56,
+        "cv": 0.478,
+        "outcome": "problematico",
+        "detalle": "CR<1, no cubre cuota en peor mes",
+        "distancia": 0.7596,
+        "similaridad": 24.0
+      }
+    ]
+  },
+  "brief": "De los 5 clientes con perfil más comparable a Andrés Montecinos, 4 fueron aprobados para crédito hipotecario. Cliente más similar: Adrián Zabaleta (similaridad 96.4%). Enviado Coopeuch, Renta Nacional.\nSeñal de confianza: alta.",
+  "marcadores_semanticos": {
+    "marcadores": [
+      {
+        "id": "M1",
+        "nivel": 1,
+        "label": "RÍGIDO",
+        "descripcion": ">95% ingreso fijo, varianza irrelevante",
+        "valor_politica": 0.0,
+        "trunca": false,
+        "narrativa": "CV observado: 0.6%. 99.6% del ingreso es estructural fijo: sueldo base ($3,037,000), gratificación ($418,792) y bonos ($473,193) idénticos en 3 meses. Única fuente de varianza: horas extras ($13K-$71K sobre $3.4M). Ingreso predecible mes a mes. Sin riesgo de caída por componente variable.",
+        "datos_soporte": {
+          "pct_fijo": 0.984,
+          "componentes_fijos": [
+            "sueldo_base",
+            "gratificacion",
+            "bonos"
+          ],
+          "componente_variable": "horas_extras",
+          "rango_variable": {
+            "min": 13897,
+            "max": 71485
+          },
+          "renta_depurada_promedio": 3410985
+        },
+        "validado_por_operador": false
+      },
+      {
+        "id": "M2",
+        "nivel": 1,
+        "label": "MUY BAJO",
+        "descripcion": "Estado, FFAA, utilities reguladas, universidades públicas",
+        "valor_politica": 0.0,
+        "trunca": false,
+        "narrativa": "Empleador: AES Andes (ex AES Gener). Multinacional energética, parte de AES Corporation (NYSE: AES). Mayor generadora eléctrica de Chile. Sector regulado, infraestructura crítica, demanda inelástica. Cargo: Analista de Redes (técnico operativo, baja exposición a reestructuración). Contrato indefinido desde Nov 2024 (~15 meses). Codeudor: Javiera Melo, Swiss Trading Group, indefinido desde May 2022 (~3.7 años).",
+        "datos_soporte": {
+          "empleador": "AES Andes",
+          "sector": "Energía / Utilities",
+          "tipo_empresa": "Multinacional (NYSE: AES)",
+          "cargo": "Analista de Redes",
+          "contrato": "Indefinido",
+          "antiguedad_meses": 15,
+          "codeudor_empleador": "Swiss Trading Group",
+          "codeudor_antiguedad_meses": 44
+        },
+        "validado_por_operador": false
+      }
+    ],
+    "politica_trunca": false,
+    "resumen": {
+      "M1": "Nivel 1 — RÍGIDO",
+      "M2": "Nivel 1 — MUY BAJO"
+    }
+  },
+  "metadata": {
+    "engine": "propio_admission_v2.1",
+    "timestamp": "2026-02-22T13:05:09.682633",
+    "n_portfolio": 15,
+    "variables_distancia": [
+      "pd",
+      "pie",
+      "ratio",
+      "tipo",
+      "cv_norm"
+    ],
+    "gates": [
+      "cr_acido >= 1.0",
+      "cv < 0.08 (dep)",
+      "pd < 0.10"
+    ],
+    "weights": {
+      "pd": 3.0,
+      "pie": 1.0,
+      "ratio": 1.5,
+      "tipo": 1.0,
+      "cv_norm": 0.5
+    }
+  }
+}
