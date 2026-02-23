@@ -17,6 +17,8 @@ import math
 import os
 from datetime import datetime
 
+from asset_credit_score import run_asset_score
+
 # ============================================================
 # PORTFOLIO (15 clientes — Ossian removido, Oscar Paduro agregado)
 # ============================================================
@@ -283,13 +285,14 @@ def crear_marcador(marcador_id, nivel, narrativa, datos_soporte=None):
 # ============================================================
 # EJECUCIÓN COMPLETA
 # ============================================================
-def run_admission(postulante, marcadores=None):
+def run_admission(postulante, marcadores=None, activo=None):
     """
     Ejecuta el motor completo de admisión.
 
     Args:
         postulante: dict con {nombre, pd, pie, ratio, tipo, cr_acido, cv}
         marcadores: lista de marcadores semánticos (output de crear_marcador)
+        activo: dict con datos del activo (opcional). Si se pasa, corre Asset Credit Score.
 
     Returns:
         dict con resultado completo
@@ -309,6 +312,11 @@ def run_admission(postulante, marcadores=None):
     marcadores = marcadores or []
     politica_trunca = any(m["trunca"] for m in marcadores)
 
+    # 5. Asset Credit Score (si hay datos del activo)
+    asset_score = None
+    if activo is not None:
+        asset_score = run_asset_score(activo)
+
     resultado = {
         "postulante": postulante,
         "gates": {
@@ -325,13 +333,15 @@ def run_admission(postulante, marcadores=None):
             "politica_trunca": politica_trunca,
             "resumen": {m["id"]: f"Nivel {m['nivel']} — {m['label']}" for m in marcadores},
         },
+        "asset_score": asset_score,
         "metadata": {
-            "engine": "propio_admission_v2.1",
+            "engine": "propio_admission_v2.2",
             "timestamp": datetime.now().isoformat(),
             "n_portfolio": len(PORTFOLIO),
             "variables_distancia": ["pd", "pie", "ratio", "tipo", "cv_norm"],
             "gates": ["cr_acido >= 1.0", "cv < 0.08 (dep)", "pd < 0.10"],
             "weights": WEIGHTS,
+            "asset_score_enabled": activo is not None,
         }
     }
 
@@ -380,6 +390,20 @@ def print_resultado(r):
             print(f"       {m['narrativa'][:120]}...")
         if r["marcadores_semanticos"]["politica_trunca"]:
             print(f"\n  ⚠ POLÍTICA TRUNCADA: Nivel 4 detectado. No aprueba.")
+
+    if r.get("asset_score") and "error" not in r["asset_score"]:
+        a = r["asset_score"]
+        print(f"\n{'─' * 80}")
+        print("ASSET CREDIT SCORE v2.2")
+        print(f"{'─' * 80}")
+        print(f"  Score: {a['total']}  |  Decisión: {a['decision']}  |  Confianza: {a['nivel_confianza']}")
+        for dim, data in a["dimensiones"].items():
+            print(f"    {dim:<14} {data['score']:>7.2f}  (×{data['peso']:.0%} = {data['ponderado']:.2f})")
+        gk = a["gatekeepers"]
+        print(f"  Gatekeepers: {'✓ Todos PASS' if gk['all_pass'] else '⚠ FALLA'}")
+        if a["alerta"] != "Sin alertas críticas":
+            print(f"  ⚠ {a['alerta']}")
+        print(f"  → {a['recomendacion']}")
 
 
 # ============================================================
@@ -438,8 +462,29 @@ if __name__ == "__main__":
         }
     )
 
+    # --- DATOS DEL ACTIVO ---
+    activo = {
+        "direccion": "Santa Leonor 741",
+        "comuna": "Padre hurtado",
+        "precio_uf": 4487.22,
+        "buffer_pct": 0.15,
+        "renta_mensual_uf": 22.0,
+        "opex_mensual_uf": 3.55,
+        "antiguedad_anos": 0,
+        "fase_economica": "NORMAL",
+        "trimestre": "Q3",
+        "estado_fisico": 10,
+        "cumplimiento_legal": 10,
+        "riesgo_sismico": 8,
+        "conectividad": 4,
+        "servicios": 6,
+        "velocidad_absorcion": 6,
+        "demanda_zona": 8,
+        "renta_cliente_uf": 24.0,
+    }
+
     # --- EJECUTAR ---
-    resultado = run_admission(postulante, marcadores=[m1, m2])
+    resultado = run_admission(postulante, marcadores=[m1, m2], activo=activo)
 
     # --- IMPRIMIR ---
     print_resultado(resultado)
