@@ -172,12 +172,13 @@ def evaluar_gates(postulante):
             "detalle": f"CV = {cv:.3f} {'< 0.08 ✓' if cv < 0.08 else '≥ 0.08 ✗'}"
         })
     else:
+        cv = postulante["cv"]
         gates.append({
             "nombre": "CV Ingreso (Independiente)",
-            "valor": postulante["cv"],
+            "valor": cv,
             "threshold": None,
             "pass": True,
-            "detalle": f"CV = {postulante['cv']:.3f} (metadata, sin gate duro)"
+            "detalle": f"CV = {cv:.3f} (metadata — flag comité si CV > 0.25)"
         })
 
     # Gate 3: PD < 10% (ideal < 5%)
@@ -333,7 +334,7 @@ if __name__ == "__main__":
         "metadata": {
             "engine": "similarity_matching_v2",
             "variables_distancia": ["pd_sinacofi", "pie_pct", "cuota_ingreso_pct", "tipo_contrato", "cv_norm"],
-            "gates_binarios": ["cr_acido >= 1.0", "cv < 0.08 (dep)", "pd < 0.10"],
+            "gates_binarios": ["cr_acido >= 1.0", "cv < 0.08 (dep) / < 0.25 (indep)", "pd < 0.10"],
             "weights": WEIGHTS,
             "ranges": RANGES,
             "n_portfolio": len(PORTFOLIO),

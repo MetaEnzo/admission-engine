@@ -1,13 +1,17 @@
 """
-PROPIO — Motor de Admisión v2.1 + Marcadores Semánticos
-========================================================
+PROPIO — Motor de Admisión v3.0
+================================
 Ejecutar: python propio_admission_engine.py
 
 Flujo:
-  1. Gates binarios (pasa/no pasa)
-  2. Similarity Matching (5D euclidiana)
-  3. Marcadores Semánticos (clasificación para vertical Política)
-  4. Genera HTML para Comité
+  1. Credit Score (4 verticales + renta depurada + PD)
+  2. Asset Credit Score (5 dimensiones)
+  3. Matriz Credit × Asset → Nivel → Decisión
+  4. Plusvalía & Exit (motor de amortización + simulación hipotecaria)
+  5. Gates complementarios (CR ácido, CV, PD)
+  6. Similarity Matching (5D euclidiana)
+  7. Marcadores Semánticos (M1, M2, M3)
+  8. Brief determinístico
 
 Requisitos: Python 3.9+, sin dependencias externas.
 """
@@ -18,6 +22,9 @@ import os
 from datetime import datetime
 
 from asset_credit_score import run_asset_score
+from credit_score import run_credit_score, lookup_matrix
+from plusvalor_engine import run_plusvalor
+from stress_test import run_stress_test
 
 # ============================================================
 # PORTFOLIO (15 clientes — Ossian removido, Oscar Paduro agregado)
@@ -183,12 +190,13 @@ def evaluar_gates(postulante):
             "detalle": f"CV = {cv:.3f} {'< 0.08 ✓' if cv < 0.08 else '≥ 0.08 ✗'}"
         })
     else:
+        cv = postulante["cv"]
         gates.append({
             "nombre": "CV Ingreso (Independiente)",
-            "valor": postulante["cv"],
+            "valor": cv,
             "threshold": None,
             "pass": True,
-            "detalle": f"CV = {postulante['cv']:.3f} (metadata, sin gate duro)"
+            "detalle": f"CV = {cv:.3f} (metadata — flag comité si CV > 0.25)"
         })
 
     pd = postulante["pd"]
@@ -285,19 +293,23 @@ def crear_marcador(marcador_id, nivel, narrativa, datos_soporte=None):
 # ============================================================
 # EJECUCIÓN COMPLETA
 # ============================================================
-def run_admission(postulante, marcadores=None, activo=None):
+def run_admission(postulante, marcadores=None, activo=None,
+                  cliente_credit=None, datos_plusvalor=None,
+                  stress_input=None):
     """
-    Ejecuta el motor completo de admisión.
+    Ejecuta el motor completo de admisión v3.0.
 
     Args:
         postulante: dict con {nombre, pd, pie, ratio, tipo, cr_acido, cv}
         marcadores: lista de marcadores semánticos (output de crear_marcador)
         activo: dict con datos del activo (opcional). Si se pasa, corre Asset Credit Score.
+        cliente_credit: dict con datos para Credit Score (opcional). Ver credit_score.run_credit_score.
+        datos_plusvalor: dict con datos para Motor de Plusvalía (opcional). Ver plusvalor_engine.run_plusvalor.
 
     Returns:
         dict con resultado completo
     """
-    # 1. Gates
+    # 1. Gates complementarios
     gates = evaluar_gates(postulante)
     all_gates_pass = all(g["pass"] for g in gates)
 
@@ -312,13 +324,51 @@ def run_admission(postulante, marcadores=None, activo=None):
     marcadores = marcadores or []
     politica_trunca = any(m["trunca"] for m in marcadores)
 
-    # 5. Asset Credit Score (si hay datos del activo)
+    # 5. Asset Credit Score
     asset_score = None
     if activo is not None:
         asset_score = run_asset_score(activo)
 
+    # 6. Credit Score
+    credit_score_result = None
+    if cliente_credit is not None:
+        credit_score_result = run_credit_score(cliente_credit)
+
+    # 7. Matriz Credit × Asset
+    matrix_result = None
+    if credit_score_result and asset_score and "error" not in asset_score:
+        matrix_result = lookup_matrix(
+            credit_score_result["credit_score"],
+            asset_score["total"],
+        )
+
+    # 8. Motor de Plusvalía & Exit
+    plusvalor_result = None
+    if datos_plusvalor is not None:
+        plusvalor_result = run_plusvalor(datos_plusvalor)
+
+    # 9. Stress Test
+    stress_result = None
+    if stress_input is not None:
+        stress_result = run_stress_test(
+            cuota=stress_input["cuota"],
+            ingreso=stress_input["ingreso"],
+            score=stress_input["score"],
+            tipo=stress_input["tipo"],
+            egreso_total=stress_input.get("egreso_total"),
+        )
+
     resultado = {
         "postulante": postulante,
+        # --- EJE FORMAL (Motor 19.12) ---
+        "credit_score": credit_score_result,
+        "asset_score": asset_score,
+        "matrix": matrix_result,
+        # --- PLUSVALÍA & EXIT ---
+        "plusvalor": plusvalor_result,
+        # --- STRESS TEST ---
+        "stress_test": stress_result,
+        # --- CAPA COMPLEMENTARIA ---
         "gates": {
             "detalle": gates,
             "all_pass": all_gates_pass,
@@ -333,15 +383,18 @@ def run_admission(postulante, marcadores=None, activo=None):
             "politica_trunca": politica_trunca,
             "resumen": {m["id"]: f"Nivel {m['nivel']} — {m['label']}" for m in marcadores},
         },
-        "asset_score": asset_score,
         "metadata": {
-            "engine": "propio_admission_v2.2",
+            "engine": "propio_admission_v3.0",
             "timestamp": datetime.now().isoformat(),
             "n_portfolio": len(PORTFOLIO),
-            "variables_distancia": ["pd", "pie", "ratio", "tipo", "cv_norm"],
-            "gates": ["cr_acido >= 1.0", "cv < 0.08 (dep)", "pd < 0.10"],
-            "weights": WEIGHTS,
-            "asset_score_enabled": activo is not None,
+            "modules_enabled": {
+                "credit_score": cliente_credit is not None,
+                "asset_score": activo is not None,
+                "matrix": matrix_result is not None,
+                "plusvalor": datos_plusvalor is not None,
+                "stress_test": stress_input is not None,
+                "marcadores": len(marcadores) > 0,
+            },
         }
     }
 
@@ -352,20 +405,105 @@ def print_resultado(r):
     """Imprime resultado en consola."""
     p = r["postulante"]
     print("=" * 80)
-    print(f"PROPIO — Motor de Admisión v2.1")
+    print(f"PROPIO — Motor de Admisión v3.0")
     print("=" * 80)
     print(f"\nPostulante: {p['nombre']}")
     print(f"  PD: {p['pd']*100:.1f}%  |  Pie: {p['pie']*100:.1f}%  |  C/I: {p['ratio']*100:.1f}%")
     print(f"  Tipo: {'Dep' if p['tipo']==1 else 'Indep'}  |  CR ácido: {p['cr_acido']:.2f}x  |  CV: {p['cv']:.3f}")
 
+    # --- CREDIT SCORE ---
+    cs = r.get("credit_score")
+    if cs:
+        print(f"\n{'─' * 80}")
+        print("CREDIT SCORE (Motor 19.12)")
+        print(f"{'─' * 80}")
+        print(f"  Credit Score: {cs['credit_score']}  |  PD ajustada: {cs['pd']['pd_ajustada']*100:.2f}%")
+        renta = cs.get("renta", {})
+        if renta:
+            print(f"  Renta depurada: ${renta.get('renta_total', 0):,.0f}")
+        endeu = cs.get("endeudamiento", {})
+        if endeu:
+            er = endeu.get("egreso_renta", 0)
+            print(f"  Egreso/Renta: {er*100:.1f}%")
+        verts = cs["verticales"]
+        print(f"  Verticales:")
+        for v_name, v_data in verts.items():
+            print(f"    {v_name:<20} Nivel {v_data['score']}")
+
+    # --- ASSET CREDIT SCORE ---
+    if r.get("asset_score") and "error" not in r["asset_score"]:
+        a = r["asset_score"]
+        print(f"\n{'─' * 80}")
+        print("ASSET CREDIT SCORE v2.2")
+        print(f"{'─' * 80}")
+        print(f"  Score: {a['total']}  |  Decisión: {a['decision']}  |  Confianza: {a['nivel_confianza']}")
+        for dim, data in a["dimensiones"].items():
+            print(f"    {dim:<14} {data['score']:>7.2f}  (x{data['peso']:.0%} = {data['ponderado']:.2f})")
+        gk = a["gatekeepers"]
+        print(f"  Gatekeepers: {'✓ Todos PASS' if gk['all_pass'] else '⚠ FALLA'}")
+        if a["alerta"] != "Sin alertas críticas":
+            print(f"  ⚠ {a['alerta']}")
+        print(f"  → {a['recomendacion']}")
+
+    # --- MATRIX ---
+    mx = r.get("matrix")
+    if mx:
+        print(f"\n{'─' * 80}")
+        print("MATRIZ CREDIT x ASSET")
+        print(f"{'─' * 80}")
+        print(f"  Rating: {mx['rating']}  |  Nivel: {mx['nivel']}  |  Decisión: {mx['decision']}")
+        print(f"  Banda Credit: {mx['credit_band']}  |  Banda Asset: {mx['asset_band']}")
+
+    # --- PLUSVALOR ---
+    pv = r.get("plusvalor")
+    if pv:
+        print(f"\n{'─' * 80}")
+        print("PLUSVALÍA & EXIT")
+        print(f"{'─' * 80}")
+        motor = pv["motor"]
+        ex = pv["exit"]
+        print(f"  Arriendo: {motor['arriendo_uf']:.2f} UF  |  Alpha: {motor['alpha']:.4f}")
+        print(f"  Exit: mes {ex['mes']}  ({ex['anos']:.1f} años)  |  Ahorro: {ex['ahorro_meses']} meses vs sin plusvalía")
+        hip = pv.get("hipotecario", {})
+        if hip:
+            califica = "Califica" if hip.get("pass") else "No califica"
+            print(f"  Hipotecario: dividendo {hip['dividendo_uf']:.2f} UF  |  ratio {hip['ratio_dividendo_ingreso']*100:.1f}%  |  {califica}")
+        print(f"  Sensibilidad IPV:")
+        for s in pv.get("sensibilidad_ipv", []):
+            exit_str = f"mes {s['exit_mes']}" if s['exit_mes'] and s['exit_mes'] <= 60 else "no alcanza"
+            print(f"    IPV {s['ipv']*100:.0f}%: {exit_str}")
+
+    # --- STRESS TEST ---
+    st = r.get("stress_test")
+    if st:
+        print(f"\n{'─' * 80}")
+        print("STRESS TEST")
+        print(f"{'─' * 80}")
+        pre = st["pre_estres"]
+        s = st["stress"]
+        d = st["decision"]
+        print(f"  Pre-estrés:")
+        print(f"    C/I: {pre['ratio_ci']:.1%}  |  Tramo: {st['tramo']['rango']}  |  Max: {st['tramo']['cuota_max']:.0%}")
+        ci_status = "✓" if d["ci_en_tramo"] else "✗ FLAG COMITÉ"
+        print(f"    En tramo: {ci_status}")
+        print(f"  Stress:")
+        print(f"    Haircut: {s['haircut_pct']:.0%} ({s['tipo_label']})")
+        print(f"    Ingreso estresado: ${s['ingreso_estresado']:,.0f}")
+        print(f"    C/I estresado: {s['ratio_ci_estresado']:.1%}")
+        gate_status = "✓ PASA" if s["pasa_hard_gate"] else "✗ RECHAZADO"
+        print(f"    Hard gate (≤45%): {gate_status}")
+        print(f"\n  → {d['resumen']}")
+
+    # --- GATES ---
     print(f"\n{'─' * 80}")
-    print("GATES")
+    print("GATES COMPLEMENTARIOS")
     print(f"{'─' * 80}")
     for g in r["gates"]["detalle"]:
         status = "✓ PASS" if g["pass"] else "✗ FAIL"
         print(f"  {status}  {g['nombre']}: {g['detalle']}")
     print(f"\n  → {'Todos PASS' if r['gates']['all_pass'] else '⚠ Gate(s) fallido(s)'}")
 
+    # --- TOP 5 ---
     print(f"\n{'─' * 80}")
     print("TOP 5 SIMILARES")
     print(f"{'─' * 80}")
@@ -374,11 +512,13 @@ def print_resultado(r):
         ratio_str = f"{s['ratio']*100:.1f}%" if s['ratio'] else "N/A"
         print(f"{i:<3} {s['nombre']:<22} {s['similaridad']:>4.1f}% {s['pd']*100:>6.1f}% {s['pie']*100:>6.1f}% {ratio_str:>7} {s['outcome']}")
 
+    # --- BRIEF ---
     print(f"\n{'─' * 80}")
     print("BRIEF")
     print(f"{'─' * 80}")
     print(r["brief"])
 
+    # --- MARCADORES ---
     if r["marcadores_semanticos"]["marcadores"]:
         print(f"\n{'─' * 80}")
         print("MARCADORES SEMÁNTICOS (Vertical: Política)")
@@ -391,19 +531,13 @@ def print_resultado(r):
         if r["marcadores_semanticos"]["politica_trunca"]:
             print(f"\n  ⚠ POLÍTICA TRUNCADA: Nivel 4 detectado. No aprueba.")
 
-    if r.get("asset_score") and "error" not in r["asset_score"]:
-        a = r["asset_score"]
-        print(f"\n{'─' * 80}")
-        print("ASSET CREDIT SCORE v2.2")
-        print(f"{'─' * 80}")
-        print(f"  Score: {a['total']}  |  Decisión: {a['decision']}  |  Confianza: {a['nivel_confianza']}")
-        for dim, data in a["dimensiones"].items():
-            print(f"    {dim:<14} {data['score']:>7.2f}  (×{data['peso']:.0%} = {data['ponderado']:.2f})")
-        gk = a["gatekeepers"]
-        print(f"  Gatekeepers: {'✓ Todos PASS' if gk['all_pass'] else '⚠ FALLA'}")
-        if a["alerta"] != "Sin alertas críticas":
-            print(f"  ⚠ {a['alerta']}")
-        print(f"  → {a['recomendacion']}")
+    # --- METADATA ---
+    meta = r["metadata"]
+    print(f"\n{'─' * 80}")
+    print(f"Engine: {meta['engine']}  |  Portfolio: {meta['n_portfolio']}  |  {meta['timestamp']}")
+    mods = meta["modules_enabled"]
+    enabled = [k for k, v in mods.items() if v]
+    print(f"  Módulos activos: {', '.join(enabled) if enabled else 'solo gates+matching'}")
 
 
 # ============================================================
@@ -483,8 +617,68 @@ if __name__ == "__main__":
         "renta_cliente_uf": 24.0,
     }
 
-    # --- EJECUTAR ---
-    resultado = run_admission(postulante, marcadores=[m1, m2], activo=activo)
+    # --- DATOS CREDIT SCORE (Motor 19.12) ---
+    cliente_credit = {
+        "pd_sinacofi": 0.05,
+        "score_sinacofi": 534,
+        "rbi": None,  # No existe en admisión
+        "tipo_contrato": "dependiente",
+        "antiguedad_meses": 15,
+        "historial_equifax_meses": 36,
+        "morosidades_vigentes": 0,
+        "protestos": 0,
+        "deuda_total_clp": 0,
+        "cuota_propio_clp": 1_155_384,
+        "otros_creditos_clp": 0,
+        "ingreso_bruto_clp": 3_929_285,
+        "liquidaciones": [
+            {"total_haberes": 3_410_985, "colacion": 0, "movilizacion": 0},
+            {"total_haberes": 3_420_000, "colacion": 0, "movilizacion": 0},
+            {"total_haberes": 3_402_000, "colacion": 0, "movilizacion": 0},
+        ],
+        "valor_prop_uf": 4487.22,
+        "pie_pct": 0.10,
+        "ltv": 0.90,
+        "plazo_meses": 60,
+        "tasa_anual": 0.065,
+        "arriendo_uf": 22.0,
+        "cuota_ingreso_ratio": 0.367,
+    }
+
+    # --- DATOS PLUSVALOR ---
+    valor_prop = 4487.22
+    pie_uf = valor_prop * 0.10  # 10% pie
+    meta_uf = valor_prop * 0.20  # meta 20%
+    cuota_propio_uf = 1_155_384 / 35660  # CLP → UF aprox
+    datos_plusvalor = {
+        "valor_activo": valor_prop,
+        "pie_uf": pie_uf,
+        "meta_uf": meta_uf,
+        "cuota_propio": cuota_propio_uf,
+        "ingreso_uf": 110.0,
+        "ipv": 0.03,
+        "plazo_max": 60,
+        "tasa_banco": 0.045,
+        "plazo_hipotecario": 240,
+    }
+
+    # --- DATOS STRESS TEST ---
+    stress_input = {
+        "cuota": 1_155_384,
+        "ingreso": 3_410_985,
+        "score": 534,
+        "tipo": 1,  # dependiente
+    }
+
+    # --- EJECUTAR v3.0 ---
+    resultado = run_admission(
+        postulante,
+        marcadores=[m1, m2],
+        activo=activo,
+        cliente_credit=cliente_credit,
+        datos_plusvalor=datos_plusvalor,
+        stress_input=stress_input,
+    )
 
     # --- IMPRIMIR ---
     print_resultado(resultado)
