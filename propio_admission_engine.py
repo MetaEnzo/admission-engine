@@ -22,9 +22,6 @@ import os
 from datetime import datetime
 
 from asset_credit_score import run_asset_score
-from credit_score import run_credit_score, lookup_matrix
-from plusvalor_engine import run_plusvalor
-from stress_test import run_stress_test
 
 # ============================================================
 # PORTFOLIO (15 clientes — Ossian removido, Oscar Paduro agregado)
@@ -329,27 +326,31 @@ def run_admission(postulante, marcadores=None, activo=None,
     if activo is not None:
         asset_score = run_asset_score(activo)
 
-    # 6. Credit Score
+    # 6. Credit Score (lazy import — module optional for web deploy)
     credit_score_result = None
     if cliente_credit is not None:
+        from credit_score import run_credit_score
         credit_score_result = run_credit_score(cliente_credit)
 
     # 7. Matriz Credit × Asset
     matrix_result = None
     if credit_score_result and asset_score and "error" not in asset_score:
+        from credit_score import lookup_matrix
         matrix_result = lookup_matrix(
             credit_score_result["credit_score"],
             asset_score["total"],
         )
 
-    # 8. Motor de Plusvalía & Exit
+    # 8. Motor de Plusvalía & Exit (lazy import — module optional for web deploy)
     plusvalor_result = None
     if datos_plusvalor is not None:
+        from plusvalor_engine import run_plusvalor
         plusvalor_result = run_plusvalor(datos_plusvalor)
 
-    # 9. Stress Test
+    # 9. Stress Test (lazy import — module optional for web deploy)
     stress_result = None
     if stress_input is not None:
+        from stress_test import run_stress_test
         stress_result = run_stress_test(
             cuota=stress_input["cuota"],
             ingreso=stress_input["ingreso"],
