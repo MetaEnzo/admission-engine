@@ -1,0 +1,1981 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comité #1 — Evaluación {% if resultado and resultado.postulante %}{{ resultado.postulante.nombre }}{% else %}{{ form.get('nombre', 'Caso') }}{% endif %}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: ui-sans-serif, system-ui, sans-serif; background-color: #f3f4f6; min-height: 100vh; line-height: 1.5; }
+        :root {
+            --propio-orange: #FF8040;
+            --propio-blue: #1E487B;
+            --propio-gray: #6B7280;
+            --propio-light-orange: #FFF3ED;
+            --propio-light-blue: #E8EEF4;
+            --pe-green: #16a34a;
+            --pe-yellow: #d97706;
+            --pe-red: #dc2626;
+        }
+        .container { max-width: 80rem; margin: 0 auto; padding: 0 1rem; }
+        .bg-white { background-color: #fff; }
+        .bg-gray-50 { background-color: #f9fafb; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-xl { border-radius: 0.75rem; }
+        .shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .shadow-md { box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); }
+        .border { border: 1px solid #e5e7eb; }
+        .p-3 { padding: 0.75rem; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-3 { margin-top: 0.75rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        .flex { display: flex; }
+        .grid { display: grid; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-xs { font-size: 0.75rem; }
+        .text-sm { font-size: 0.875rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-3xl { font-size: 1.875rem; }
+        .text-4xl { font-size: 2.25rem; }
+        .text-5xl { font-size: 3rem; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        .uppercase { text-transform: uppercase; }
+        .tracking-wide { letter-spacing: 0.025em; }
+        .text-white { color: #fff; }
+        .text-gray-500 { color: #6b7280; }
+        .text-gray-600 { color: #4b5563; }
+        .text-gray-700 { color: #374151; }
+        .text-gray-800 { color: #1f2937; }
+        .text-green-600 { color: #16a34a; }
+        .text-red-500 { color: #ef4444; }
+        .text-amber-600 { color: #d97706; }
+        .overflow-hidden { overflow: hidden; }
+        .w-full { width: 100%; }
+        .border-t { border-top: 1px solid #e5e7eb; }
+        .pt-3 { padding-top: 0.75rem; }
+        .py-1 { padding: 0.25rem 0; }
+        .py-2 { padding: 0.5rem 0; }
+        .pb-2 { padding-bottom: 0.5rem; }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+        .accordion-content.open { max-height: 8000px; transition: max-height 0.5s ease-in; }
+        .chevron { transition: transform 0.3s ease; }
+        .chevron.rotate { transform: rotate(180deg); }
+        .accordion-btn { width: 100%; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; background: #f9fafb; border: none; cursor: pointer; transition: background 0.2s; }
+        .accordion-btn:hover { background: #f3f4f6; }
+        .card-propio-orange { background: var(--propio-light-orange); border: 1px solid #FFD4BC; }
+        .card-propio-blue { background: var(--propio-light-blue); border: 1px solid #B8CCDF; }
+        .badge-propio-orange { background: var(--propio-orange); color: white; }
+        .badge-propio-blue { background: var(--propio-blue); color: white; }
+        .text-propio-orange { color: var(--propio-orange); }
+        .text-propio-blue { color: var(--propio-blue); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; }
+        .matriz-aaa { background: #15803d; color: white; }
+        .matriz-aa { background: #22c55e; color: white; }
+        .matriz-a { background: #4ade80; color: white; }
+        .matriz-bbb { background: #facc15; color: #1f2937; }
+        .matriz-bb { background: #fbbf24; color: #1f2937; }
+        .matriz-b { background: #f97316; color: white; }
+        .matriz-ccc { background: #dc2626; color: white; }
+        .matriz-selected { outline: 4px solid #1f2937; animation: pulse 2s infinite; }
+        @keyframes pulse { 50% { opacity: 0.8; } }
+        header { background: white; border-bottom: 1px solid #e5e7eb; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .badge-pending { background: #fef3c7; color: #92400e; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-overlay.open { display: flex; }
+        .modal-content { background: white; border-radius: 1rem; padding: 1.5rem; max-width: 850px; width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #6b7280; }
+        .modal-close:hover { color: #1f2937; }
+        .btn-compare { background: var(--propio-blue); color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; cursor: pointer; margin-top: 0.75rem; transition: background 0.2s; display: flex; align-items: center; gap: 0.5rem; }
+        .btn-compare:hover { background: #153a63; }
+        .pe-section { background: #fff; border-radius: 0; padding: 1.5rem 0 0 0; margin-bottom: 0; color: #1f2937; }
+        .pe-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; }
+        .decomp-bar { height: 8px; border-radius: 4px; background: #e5e7eb; overflow: hidden; margin-top: 4px; }
+        .decomp-fill { height: 100%; border-radius: 4px; transition: width 1s ease-out; }
+        .equity-bar-container { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; margin-top: 1rem; }
+        .equity-bar { height: 32px; border-radius: 6px; background: #e5e7eb; overflow: hidden; display: flex; position: relative; }
+        .equity-segment { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 600; transition: width 1s ease-out; }
+        .equity-pie-inicial { background: #3b82f6; }
+        .equity-amortizacion { background: #1E487B; }
+        .equity-plusvalia { background: var(--propio-orange); }
+        .equity-faltante { background: #f3f4f6; }
+        .stress-card { background: white; border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1rem; }
+        .stress-pass { background: #f0fdf4; border: 1px solid #bbf7d0; }
+        .stress-fail { background: #fef2f2; border: 1px solid #fecaca; }
+        .gate-badge { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .gate-pass { background: #dcfce7; color: #166534; }
+        .gate-fail { background: #fee2e2; color: #991b1b; }
+        .sim-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        .sim-table thead th { background: #f9fafb; padding: 0.75rem; text-align: left; font-size: 0.875rem; font-weight: 600; border-bottom: 2px solid #e5e7eb; }
+        .sim-table tbody td { padding: 0.75rem; border-bottom: 1px solid #f3f4f6; }
+        .sim-table tbody tr:hover { background: #f9fafb; }
+        .sim-rank { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-weight: 700; font-size: 0.875rem; color: white; }
+        .sim-rank-1 { background: var(--propio-orange); }
+        .sim-rank-2 { background: #d97706; }
+        .sim-rank-3 { background: #c2410c; }
+        .sim-rank-4 { background: #92400e; }
+        .sim-rank-5 { background: #78716c; }
+        .outcome-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .outcome-exit { background: #dcfce7; color: #166534; }
+        .outcome-activo { background: #dbeafe; color: #1e40af; }
+        .outcome-problematico { background: #fee2e2; color: #991b1b; }
+        .sim-bar-container { display: flex; align-items: center; gap: 0.5rem; }
+        .sim-bar { flex: 1; height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden; }
+        .sim-bar-fill { height: 100%; border-radius: 3px; }
+        .sim-bar-fill.high { background: #16a34a; }
+        .sim-bar-fill.mid { background: #d97706; }
+        .sim-bar-fill.low { background: #dc2626; }
+        .sim-value { font-weight: 700; font-size: 0.875rem; min-width: 44px; text-align: right; }
+        .sim-brief-card { background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid #16a34a; border-radius: 0.75rem; padding: 1rem; margin: 1rem 0; }
+        .sim-brief-text { font-size: 0.875rem; line-height: 1.6; color: #374151; }
+        .marcador-section { background: white; border-radius: 0.75rem; padding: 1rem; margin: 1rem 0; border-left: 4px solid #9b59b6; }
+        .marcador-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+        .marcador-id { background: #9b59b6; color: white; font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.75rem; border-radius: 6px; }
+        .marcador-nivel { background: #dcfce7; color: #166534; font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.75rem; border-radius: 6px; }
+        .marcador-contenido { font-size: 0.875rem; line-height: 1.6; color: #4b5563; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container" style="padding: 0.75rem 1rem;">
+            <div class="flex items-center gap-4">
+                <button style="color: #4b5563;">&#9776;</button>
+                <span class="font-semibold text-gray-800">PROPIO OS</span>
+                <span class="text-xs text-gray-500" style="margin-left: auto;">Risk Assessment v1</span>
+            </div>
+        </div>
+    </header>
+    <main class="container" style="padding: 1.5rem 1rem;">
+
+        {% if error %}
+        <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+            <p style="color: #dc2626; font-weight: 600;">{{ error }}</p>
+        </div>
+        {% endif %}
+
+        {% if not resultado %}
+        <!-- ============================================================ -->
+        <!-- FORMULARIO DE ENTRADA — Datos crudos, ratios se calculan -->
+        <!-- ============================================================ -->
+        <div class="text-sm text-gray-500 mb-2">&#127968; / Nueva Evaluaci&oacute;n</div>
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">Nueva Evaluaci&oacute;n de Admisi&oacute;n</h1>
+
+        <form method="POST" action="/evaluar">
+            <!-- DATOS PERSONA -->
+            <div class="bg-white rounded-xl shadow-md border p-6 mb-6">
+                <h2 class="text-lg font-semibold mb-4 text-propio-blue">&#128100; Datos del Postulante</h2>
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Nombre</label>
+                        <input type="text" name="nombre" value="{{ form.get('nombre', '') if form else '' }}" placeholder="Nombre completo" style="width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-top:0.25rem;">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">PD Sinacofi</label>
+                        <input type="number" name="pd" step="0.01" min="0" max="1" value="{{ form.get('pd', '') if form else '' }}" placeholder="0.05" required style="width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-top:0.25rem;">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Pie (%)</label>
+                        <input type="number" name="pie" step="0.01" min="0" max="1" value="{{ form.get('pie', '') if form else '' }}" placeholder="0.10" required style="width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-top:0.25rem;">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Tipo contrato</label>
+                        <select name="tipo" required style="width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-top:0.25rem;">
+                            <option value="1" {{ 'selected' if form and form.get('tipo') == '1' }}>Dependiente</option>
+                            <option value="0" {{ 'selected' if form and form.get('tipo') == '0' }}>Independiente</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DATOS FINANCIEROS (raw — todo se calcula) -->
+            <div class="bg-white rounded-xl shadow-md border p-6 mb-6">
+                <h2 class="text-lg font-semibold mb-4 text-propio-blue">&#128176; Datos Financieros</h2>
+                <p class="text-xs text-gray-400 mb-4">C/I, CR &aacute;cido y CV se calculan autom&aacute;ticamente desde los datos crudos</p>
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Ingreso bruto mensual ($)</label>
+                        <input type="number" name="ingreso_bruto" step="1" min="0" value="{{ form.get('ingreso_bruto', '') if form else '' }}" placeholder="3410985" required style="width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-top:0.25rem;">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Cuota mensual PROPIO ($)</label>
+                        <input type="number" name="cuota_mensual" step="1" min="0" value="{{ form.get('cuota_mensual', '') if form else '' }}" placeholder="1155384" required style="width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-top:0.25rem;">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">M&iacute;nimo ingreso mensual ($)</label>
+                        <input type="number" name="min_ingreso" step="1" min="0" value="{{ form.get('min_ingreso', '') if form else '' }}" placeholder="(peor mes de liquidaciones)" style="width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-top:0.25rem;">
+                        <p class="text-xs text-gray-400 mt-1">Si vac&iacute;o, usa ingreso bruto</p>
+                    </div>
+                </div>
+                <!-- Sueldos líquidos de liquidaciones → calcula CV y min_ingreso -->
+                <div style="margin-top: 1rem;">
+                    <label class="text-xs text-gray-500 uppercase">Sueldos l&iacute;quidos de liquidaciones ($)</label>
+                    <input type="text" name="sueldos_liquidos" value="{{ form.get('sueldos_liquidos', '') if form else '' }}" placeholder="3410985, 3420000, 3402000" style="width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-top:0.25rem;">
+                    <p class="text-xs text-gray-400 mt-1">Separados por coma. CV se calcula autom&aacute;ticamente (std/mean). M&iacute;nimo ingreso se autocompleta si est&aacute; vac&iacute;o.</p>
+                </div>
+                <div class="grid grid-cols-3 gap-4 mt-3" id="ratioPreview" style="display:none;">
+                    <div style="background:#f0fdf4; border-radius:0.375rem; padding:0.5rem;">
+                        <span class="text-xs text-gray-500">C/I calculado:</span>
+                        <span id="ratioCalc" class="font-semibold text-green-600"></span>
+                    </div>
+                    <div style="background:#f0fdf4; border-radius:0.375rem; padding:0.5rem;">
+                        <span class="text-xs text-gray-500">CR &aacute;cido calculado:</span>
+                        <span id="crCalc" class="font-semibold text-green-600"></span>
+                    </div>
+                    <div style="background:#f0fdf4; border-radius:0.375rem; padding:0.5rem;">
+                        <span class="text-xs text-gray-500">CV calculado:</span>
+                        <span id="cvCalc" class="font-semibold text-green-600"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- M1 VOLATILIDAD (opcional) -->
+            <div class="bg-white rounded-xl shadow-md border p-6 mb-6">
+                <h2 class="text-lg font-semibold mb-2 text-propio-blue">&#129302; Marcador M1 &mdash; Volatilidad <span class="text-xs text-gray-400 font-normal">(opcional, requiere API key)</span></h2>
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">% Ingreso fijo</label>
+                        <input type="number" name="pct_fijo" step="0.1" min="0" max="100" value="{{ form.get('pct_fijo', '') if form else '' }}" placeholder="98.8" style="width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-top:0.25rem;">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Componentes fijos</label>
+                        <input type="text" name="componentes_fijos" value="{{ form.get('componentes_fijos', '') if form else '' }}" placeholder="sueldo base, gratificaci&oacute;n" style="width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-top:0.25rem;">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Componente variable</label>
+                        <input type="text" name="componente_variable" value="{{ form.get('componente_variable', '') if form else '' }}" placeholder="horas extras" style="width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-top:0.25rem;">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Rango min variable ($)</label>
+                        <input type="text" name="rango_min" value="{{ form.get('rango_min', '') if form else '' }}" placeholder="13897" style="width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-top:0.25rem;">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Rango max variable ($)</label>
+                        <input type="text" name="rango_max" value="{{ form.get('rango_max', '') if form else '' }}" placeholder="71485" style="width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-top:0.25rem;">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Renta depurada prom ($)</label>
+                        <input type="text" name="renta_depurada" value="{{ form.get('renta_depurada', '') if form else '' }}" placeholder="3410985" style="width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-top:0.25rem;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- M2 CONTRAPARTE (opcional) -->
+            <div class="bg-white rounded-xl shadow-md border p-6 mb-6">
+                <h2 class="text-lg font-semibold mb-2 text-propio-blue">&#129302; Marcador M2 &mdash; Contraparte <span class="text-xs text-gray-400 font-normal">(opcional, requiere API key)</span></h2>
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Empleador</label>
+                        <input type="text" name="empleador" value="{{ form.get('empleador', '') if form else '' }}" placeholder="AES Andes" style="width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-top:0.25rem;">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Sector</label>
+                        <input type="text" name="sector" value="{{ form.get('sector', '') if form else '' }}" placeholder="Energ&iacute;a / Utilities" style="width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-top:0.25rem;">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Tipo empresa</label>
+                        <input type="text" name="tipo_empresa" value="{{ form.get('tipo_empresa', '') if form else '' }}" placeholder="Multinacional" style="width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-top:0.25rem;">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Cargo</label>
+                        <input type="text" name="cargo" value="{{ form.get('cargo', '') if form else '' }}" placeholder="Analista de Redes" style="width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-top:0.25rem;">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Contrato</label>
+                        <input type="text" name="contrato" value="{{ form.get('contrato', '') if form else '' }}" placeholder="Indefinido" style="width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-top:0.25rem;">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Antig&uuml;edad (meses)</label>
+                        <input type="text" name="antiguedad_meses" value="{{ form.get('antiguedad_meses', '') if form else '' }}" placeholder="15" style="width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-top:0.25rem;">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Codeudor empleador</label>
+                        <input type="text" name="codeudor_empleador" value="{{ form.get('codeudor_empleador', '') if form else '' }}" placeholder="Swiss Trading" style="width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-top:0.25rem;">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500 uppercase">Codeudor antig&uuml;edad (meses)</label>
+                        <input type="text" name="codeudor_antiguedad_meses" value="{{ form.get('codeudor_antiguedad_meses', '') if form else '' }}" placeholder="44" style="width:100%; padding:0.5rem; border:1px solid #d1d5db; border-radius:0.375rem; margin-top:0.25rem;">
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <button type="submit" style="background: var(--propio-orange); color: white; padding: 0.75rem 3rem; border: none; border-radius: 0.5rem; font-size: 1rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 6px rgba(255,128,64,0.3);">
+                    &#9654; Evaluar Postulante
+                </button>
+            </div>
+        </form>
+
+        <script>
+        // Live preview: C/I, CR ácido, CV — all calculated
+        function updatePreview() {
+            const ingreso = parseFloat(document.querySelector('input[name="ingreso_bruto"]').value) || 0;
+            const cuota = parseFloat(document.querySelector('input[name="cuota_mensual"]').value) || 0;
+            const minIng = parseFloat(document.querySelector('input[name="min_ingreso"]').value) || ingreso;
+            const sueldosRaw = document.querySelector('input[name="sueldos_liquidos"]').value.trim();
+            const preview = document.getElementById('ratioPreview');
+
+            let hasData = false;
+
+            // C/I y CR ácido
+            if (ingreso > 0 && cuota > 0) {
+                document.getElementById('ratioCalc').textContent = (cuota / ingreso * 100).toFixed(1) + '%';
+                document.getElementById('crCalc').textContent = (minIng / cuota).toFixed(2) + 'x';
+                hasData = true;
+            }
+
+            // CV desde sueldos líquidos
+            if (sueldosRaw) {
+                const sueldos = sueldosRaw.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+                if (sueldos.length >= 2) {
+                    const mean = sueldos.reduce((a, b) => a + b, 0) / sueldos.length;
+                    const std = Math.sqrt(sueldos.reduce((a, b) => a + (b - mean) ** 2, 0) / sueldos.length);
+                    const cv = mean > 0 ? (std / mean) : 0;
+                    document.getElementById('cvCalc').textContent = cv.toFixed(4) + ' (' + (cv * 100).toFixed(2) + '%)';
+                    hasData = true;
+
+                    // Auto-fill min_ingreso si está vacío
+                    const minInput = document.querySelector('input[name="min_ingreso"]');
+                    if (!minInput.value) {
+                        minInput.placeholder = Math.min(...sueldos).toLocaleString('es-CL');
+                    }
+                } else if (sueldos.length === 1) {
+                    document.getElementById('cvCalc').textContent = '0.0000 (1 mes)';
+                    hasData = true;
+                }
+            }
+
+            preview.style.display = hasData ? 'grid' : 'none';
+        }
+
+        document.querySelectorAll('input[name="ingreso_bruto"], input[name="cuota_mensual"], input[name="min_ingreso"], input[name="sueldos_liquidos"]').forEach(el => {
+            el.addEventListener('input', updatePreview);
+        });
+        </script>
+
+        {% else %}
+        <!-- ============================================================ -->
+        <!-- RESULTADOS (cuando hay resultado) -->
+        <!-- ============================================================ -->
+        <div class="text-sm text-gray-500 mb-2">&#127968; / Comit&eacute; #1 / Evaluaci&oacute;n 1</div>
+        <div class="flex items-center gap-3 mb-4">
+            <h1 class="text-2xl font-bold text-gray-800">Comit&eacute; #1 &mdash; Evaluaci&oacute;n {{ resultado.postulante.nombre }}</h1>
+            <span class="badge-pending">Pending</span>
+        </div>
+        <div style="margin-bottom: 1rem;">
+            <a href="/" style="color: var(--propio-orange); text-decoration: none; font-size: 0.875rem;">&larr; Nueva evaluaci&oacute;n</a>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 1. RESUMEN EJECUTIVO -->
+        <!-- ============================================================ -->
+        <div class="bg-white rounded-xl shadow-md border p-6 mb-6">
+            <h2 class="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-800">
+                <span>&#128202;</span> Resumen Ejecutivo
+            </h2>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="card-propio-blue rounded-lg p-4">
+                    <p class="text-xs text-gray-500 uppercase mb-1">Cliente</p>
+                    <p class="font-semibold text-gray-800">{% if resultado and resultado.postulante %}{{ resultado.postulante.nombre }}{% else %}{{ form.get('nombre', 'Andrés Montecinos') }}{% endif %}</p>
+                    <p class="text-sm text-gray-500">{{ form.get('estado_civil', 'Soltero') }} &bull; {{ form.get('hijos', '0') }} hijos</p>
+                </div>
+                <div class="card-propio-blue rounded-lg p-4">
+                    <p class="text-xs text-gray-500 uppercase mb-1">Activo</p>
+                    <p class="font-semibold text-gray-800">{{ form.get('tipo_propiedad', 'Casa 3D+2B') }}</p>
+                    <p class="text-sm text-gray-500">{{ form.get('comuna', 'Padre Hurtado') }} &bull; {{ form.get('superficie', '91.41') }} m&sup2;</p>
+                </div>
+            </div>
+            <div class="card-propio-orange rounded-lg p-4 mb-6">
+                <div class="flex items-center justify-between" style="flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase tracking-wide">Rating Final</p>
+                        <div class="flex items-center gap-3 mt-1">
+                            <span class="text-3xl font-bold px-3 py-1 rounded-lg badge-propio-orange">{% if resultado and resultado.matrix %}{{ resultado.matrix.rating }}{% else %}AA{% endif %}</span>
+                            <span class="text-xl text-gray-600">Nivel {% if resultado and resultado.matrix %}{{ resultado.matrix.nivel }}{% else %}4{% endif %}</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-gray-500 uppercase tracking-wide">Decisi&oacute;n Recomendada</p>
+                        <p class="text-xl font-semibold text-propio-blue mt-1">{% if resultado and resultado.matrix %}{{ resultado.matrix.decision }}{% else %}Aprobaci&oacute;n Preferente{% endif %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="grid gap-3 text-center" style="grid-template-columns: repeat(7, 1fr);">
+                <div class="bg-gray-50 border rounded-lg p-3">
+                    <p class="text-xs text-gray-500">Valor Activo</p>
+                    <p class="font-bold text-lg text-gray-800">{{ form.get('valor_propiedad_uf', '4.487') }} UF</p>
+                </div>
+                <div class="bg-gray-50 border rounded-lg p-3">
+                    <p class="text-xs text-gray-500">Financiamiento</p>
+                    <p class="font-bold text-lg text-gray-800">{{ form.get('financiamiento_uf', '4.039') }} UF</p>
+                </div>
+                <div class="bg-gray-50 border rounded-lg p-3">
+                    <p class="text-xs text-gray-500">Pie</p>
+                    <p class="font-bold text-lg text-gray-800">{{ form.get('pie_porcentaje', '10') }}%</p>
+                </div>
+                <div class="bg-gray-50 border rounded-lg p-3">
+                    <p class="text-xs text-gray-500">Cuota/Ingreso</p>
+                    <p class="font-bold text-lg text-gray-800">{% if resultado and resultado.postulante %}{{ '%.1f'|format(resultado.postulante.ratio * 100) }}{% else %}36.7{% endif %}%</p>
+                </div>
+                <div class="bg-gray-50 border rounded-lg p-3">
+                    <p class="text-xs text-gray-500">GG Fin./Ingreso</p>
+                    <p class="font-bold text-lg text-gray-800">{{ form.get('gg_fin_ingreso', '14.8') }}%</p>
+                </div>
+                <div class="bg-gray-50 border rounded-lg p-3">
+                    <p class="text-xs text-gray-500">Credit Score</p>
+                    <p class="font-bold text-lg text-propio-blue">{% if resultado and resultado.credit_score %}{{ resultado.credit_score.score|round|int }}{% else %}812{% endif %}/1000</p>
+                </div>
+                <div class="bg-gray-50 border rounded-lg p-3">
+                    <p class="text-xs text-gray-500">Asset Score</p>
+                    <p class="font-bold text-lg text-propio-blue">{% if resultado and resultado.asset_score %}{{ resultado.asset_score.score|round|int }}{% else %}704{% endif %}/1000</p>
+                </div>
+            </div>
+            <div style="margin-top: 1rem; background: linear-gradient(135deg, #f0fdf4, #f9fafb); border: 1px solid #bbf7d0; border-radius: 0.75rem; padding: 0.75rem 1.25rem; display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="text-xs text-gray-500 uppercase tracking-wide font-semibold">Veredicto Motor de Riesgo:</span>
+                    <span style="background: {% if resultado and resultado.gates and not resultado.gates.aprobado %}#ef4444{% else %}#22c55e{% endif %}; color: white; font-weight: 700; padding: 0.2rem 0.75rem; border-radius: 6px; font-size: 0.8rem;">{% if resultado and resultado.gates and not resultado.gates.aprobado %}RECHAZAR{% else %}ADMITIR{% endif %}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="text-xs text-gray-500">Exit con plusval&iacute;a:</span>
+                    <span style="color: var(--propio-orange); font-weight: 700; font-size: 0.875rem;">{% if resultado and resultado.plusvalor %}Mes {{ resultado.plusvalor.exit_mes }}{% else %}Mes 31{% endif %}</span>
+                </div>
+                <div style="font-size: 0.75rem; color: #4b5563;">
+                    Estr&eacute;s &#10003; &rarr; Gates &#10003; &rarr; CV &#10003; &rarr; Equity &#10003; &rarr; Banco &#10003;
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTONES DE NAVEGACIÓN -->
+        <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
+            <button onclick="showGroup('perfil')" id="nav-perfil" class="nav-group-btn active" style="flex: 1; padding: 0.75rem 1rem; border-radius: 0.75rem; font-weight: 600; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; border: 2px solid var(--propio-blue); background: var(--propio-blue); color: white;">Perfil del Caso</button>
+            <button onclick="showGroup('activo')" id="nav-activo" class="nav-group-btn" style="flex: 1; padding: 0.75rem 1rem; border-radius: 0.75rem; font-weight: 600; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; border: 2px solid var(--propio-blue); background: white; color: var(--propio-blue);">Informaci&oacute;n del Activo</button>
+            <button onclick="showGroup('financiero')" id="nav-financiero" class="nav-group-btn" style="flex: 1; padding: 0.75rem 1rem; border-radius: 0.75rem; font-weight: 600; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; border: 2px solid var(--propio-blue); background: white; color: var(--propio-blue);">An&aacute;lisis Financiero</button>
+        </div>
+
+        <!-- ACORDEONES -->
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+
+            <!-- ============================================================ -->
+            <!-- 2. PERFIL DEL CASO (merged from Perfil Cliente + Anexo 1) -->
+            <!-- ============================================================ -->
+            <div class="bg-white rounded-xl shadow overflow-hidden" data-group="perfil">
+                <button onclick="toggleAccordion('perfil')" class="accordion-btn">
+                    <span class="font-semibold text-gray-800">Perfil del Caso</span>
+                    <svg id="chevron-perfil" class="chevron" style="width: 1.25rem; height: 1.25rem; color: #6b7280;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="content-perfil" class="accordion-content">
+                    <div class="p-6">
+                        <div class="grid gap-6" style="grid-template-columns: 1fr 1fr;">
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div class="bg-gray-50 rounded-lg p-4 border">
+                                    <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Perfil Cliente</h3>
+                                    <div class="grid grid-cols-2 gap-3 text-sm">
+                                        <div><span class="text-gray-500">Nombre:</span> <span class="font-medium">{{ form.get('nombre', 'Andrés Montecinos') }}</span></div>
+                                        <div><span class="text-gray-500">Edad:</span> <span class="font-medium">{{ form.get('edad', '29') }} a&ntilde;os</span></div>
+                                        <div><span class="text-gray-500">Nacionalidad:</span> <span class="font-medium">{{ form.get('nacionalidad', 'Chilena') }}</span></div>
+                                        <div><span class="text-gray-500">Estado Civil:</span> <span class="font-medium">{{ form.get('estado_civil', 'Soltero') }}</span></div>
+                                        <div><span class="text-gray-500">Hijos:</span> <span class="font-medium">{{ form.get('hijos', '0') }}</span></div>
+                                        <div><span class="text-gray-500">Estudios:</span> <span class="font-medium">{{ form.get('estudios', 'Ing. Conectividad y Redes') }}</span></div>
+                                    </div>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4 border">
+                                    <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Situaci&oacute;n Laboral Cliente</h3>
+                                    <div class="grid grid-cols-2 gap-3 text-sm">
+                                        <div><span class="text-gray-500">Empleador:</span> <span class="font-medium">{{ form.get('empleador', 'Vector') }}</span></div>
+                                        <div><span class="text-gray-500">Situaci&oacute;n:</span> <span class="font-medium">{{ form.get('tipo_contrato', 'Indefinido') }}</span></div>
+                                        <div><span class="text-gray-500">Cargo:</span> <span class="font-medium">{{ form.get('cargo', 'Analista de Redes') }}</span></div>
+                                        <div><span class="text-gray-500">Antig&uuml;edad:</span> <span class="font-medium">{{ form.get('antiguedad', 'Desde Nov 2024') }}</span></div>
+                                    </div>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4 border">
+                                    <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Perfil Codeudor</h3>
+                                    <div class="grid grid-cols-2 gap-3 text-sm">
+                                        <div><span class="text-gray-500">Nombre:</span> <span class="font-medium">{{ form.get('codeudor_nombre', 'Javiera Melo') }}</span></div>
+                                        <div><span class="text-gray-500">Edad:</span> <span class="font-medium">{{ form.get('codeudor_edad', '30') }} a&ntilde;os</span></div>
+                                        <div><span class="text-gray-500">Nacionalidad:</span> <span class="font-medium">{{ form.get('codeudor_nacionalidad', 'Chilena') }}</span></div>
+                                        <div><span class="text-gray-500">Estado Civil:</span> <span class="font-medium">{{ form.get('codeudor_estado_civil', 'Soltera') }}</span></div>
+                                        <div><span class="text-gray-500">Parentesco:</span> <span class="font-medium">{{ form.get('codeudor_parentesco', 'Pareja') }}</span></div>
+                                        <div><span class="text-gray-500">Estudios:</span> <span class="font-medium">{{ form.get('codeudor_estudios', 'Téc. Adm. de Empresas') }}</span></div>
+                                    </div>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4 border">
+                                    <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Situaci&oacute;n Laboral Codeudor</h3>
+                                    <div class="grid grid-cols-2 gap-3 text-sm">
+                                        <div><span class="text-gray-500">Empleador:</span> <span class="font-medium">{{ form.get('codeudor_empleador', 'Swiss Trading') }}</span></div>
+                                        <div><span class="text-gray-500">Situaci&oacute;n:</span> <span class="font-medium">{{ form.get('codeudor_tipo_contrato', 'Indefinido') }}</span></div>
+                                        <div><span class="text-gray-500">Cargo:</span> <span class="font-medium">{{ form.get('codeudor_cargo', 'Asistente de Producción') }}</span></div>
+                                        <div><span class="text-gray-500">Antig&uuml;edad:</span> <span class="font-medium">{{ form.get('codeudor_antiguedad', 'Desde May 2022') }}</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div class="bg-gray-50 rounded-lg p-4 border">
+                                    <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Condiciones de Financiamiento</h3>
+                                    <div class="flex items-start justify-between">
+                                        <div style="display: flex; flex-direction: column; gap: 0.5rem;" class="text-sm">
+                                            <div class="flex justify-between gap-8"><span class="text-gray-500">Valor Propiedad:</span> <span class="font-medium">4.487 UF</span></div>
+                                            <div class="flex justify-between gap-8"><span class="text-gray-500">Pie Inicial:</span> <span class="font-medium">10%</span></div>
+                                            <div class="flex justify-between gap-8"><span class="text-gray-500">Financiamiento:</span> <span class="font-medium">4.039 UF</span></div>
+                                            <div class="flex justify-between gap-8"><span class="text-gray-500">Cuota Mensual:</span> <span class="font-medium">$1.252.250</span></div>
+                                        </div>
+                                        <div style="display: flex; flex-direction: column; align-items: center;">
+                                            <div style="background: var(--propio-blue); width: 80px; height: 80px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                                <span class="text-3xl font-bold text-white">AA</span>
+                                            </div>
+                                            <p class="text-sm text-gray-600 mt-1 font-medium" style="text-align: center;">Solvencia<br>Muy Alta</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4 border">
+                                    <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Informaci&oacute;n Financiera</h3>
+                                    <table class="w-full text-sm">
+                                        <thead>
+                                            <tr class="text-gray-500" style="text-align: left;">
+                                                <th class="pb-2">Ingresos Familiares</th>
+                                                <th class="pb-2 text-right">Cliente</th>
+                                                <th class="pb-2 text-right">Complemento</th>
+                                                <th class="pb-2 text-right">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td class="py-1">Sueldo l&iacute;quido</td><td class="text-right">$2.386.953</td><td class="text-right">$1.189.222</td><td class="text-right font-medium">$3.576.175</td></tr>
+                                            <tr><td class="py-1">Otros ingresos</td><td class="text-right">$0</td><td class="text-right">$0</td><td class="text-right font-medium">$0</td></tr>
+                                            <tr class="border-t"><td class="py-1 font-medium">Total</td><td class="text-right font-medium">$2.386.953</td><td class="text-right font-medium">$1.189.222</td><td class="text-right font-bold">$3.576.175</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4 border">
+                                    <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Deuda CMF</h3>
+                                    <table class="w-full text-sm">
+                                        <thead>
+                                            <tr class="text-gray-500" style="text-align: left;">
+                                                <th class="pb-2">Tipo</th>
+                                                <th class="pb-2 text-right">Cliente</th>
+                                                <th class="pb-2 text-right">Complemento</th>
+                                                <th class="pb-2 text-right">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td class="py-2">Tarjeta de Cr&eacute;dito</td><td class="text-right">$2.166.153</td><td class="text-right">$0</td><td class="text-right">$2.166.153</td></tr>
+                                            <tr><td class="py-2">Cr&eacute;dito de Consumo</td><td class="text-right">$7.180.883</td><td class="text-right">$1.201.360</td><td class="text-right">$8.382.243</td></tr>
+                                            <tr><td class="py-2">Morosa</td><td class="text-right">$0</td><td class="text-right">$0</td><td class="text-right">$0</td></tr>
+                                            <tr class="border-t font-medium"><td class="py-2">Total</td><td class="text-right">$9.347.036</td><td class="text-right">$1.201.360</td><td class="text-right font-bold">$10.548.396</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4 border">
+                                    <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Origen del Caso y Casu&iacute;stica</h3>
+                                    <p class="text-sm text-gray-600">Cliente proviene de alianza con Urmeneta. Rechazado previamente por pie insuficiente. Primera vivienda.</p>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4 border">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-500">Rechazo Bancario Previo:</span>
+                                        <span class="font-medium text-amber-600">S&iacute; - Pie insuficiente</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm mt-1">
+                                        <span class="text-gray-500">Motivo de Compra:</span>
+                                        <span class="font-medium">Primera vivienda</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- 3. ANÁLISIS FINANCIERO + TEST DE ESTRÉS -->
+            <!-- ============================================================ -->
+            <div class="bg-white rounded-xl shadow overflow-hidden" data-group="financiero">
+                <button onclick="toggleAccordion('analisis')" class="accordion-btn">
+                    <span class="font-semibold text-gray-800">An&aacute;lisis Financiero + Test de Estr&eacute;s</span>
+                    <svg id="chevron-analisis" class="chevron" style="width: 1.25rem; height: 1.25rem; color: #6b7280;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="content-analisis" class="accordion-content">
+                    <div class="p-6">
+                        <div class="grid gap-4" style="grid-template-columns: 1fr 1fr;">
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div class="bg-gray-50 rounded-lg p-4 border">
+                                    <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Ratios de Cr&eacute;dito</h3>
+                                    <div style="display: flex; flex-direction: column; gap: 0.5rem;" class="text-sm">
+                                        <div class="flex justify-between"><span class="text-gray-600">Cuota / Ingreso</span><span class="font-medium">{% if resultado and resultado.postulante %}{{ '%.1f'|format(resultado.postulante.ratio * 100) }}{% else %}{{ form.get('cuota_ingreso', '36.7') }}{% endif %}%</span></div>
+                                        <div class="flex justify-between"><span class="text-gray-600">GG. Fin. / Renta</span><span class="font-medium">{{ form.get('gg_fin_ingreso', '14.8') }}%</span></div>
+                                        <div class="flex justify-between"><span class="text-gray-600">Egreso Total / Renta</span><span class="font-medium">{{ form.get('egreso_total_renta', '51.6') }}%</span></div>
+                                        <div class="flex justify-between"><span class="text-gray-600">Veces / Renta</span><span class="font-medium">{{ form.get('veces_renta', '2.61') }}x</span></div>
+                                        <div class="flex justify-between"><span class="text-gray-600">Leverage</span><span class="font-medium">{{ form.get('leverage', '12.07') }}x</span></div>
+                                    </div>
+                                </div>
+                                <div class="card-propio-blue rounded-lg p-4">
+                                    <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Probabilidad de Default</h3>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-gray-600">PD Sinacofi</span>
+                                        <span class="text-3xl font-bold text-propio-blue">{% if resultado and resultado.postulante %}{{ '%.1f'|format(resultado.postulante.pd * 100) }}{% else %}{{ form.get('pd_sinacofi', '5.0') }}{% endif %}%</span>
+                                    </div>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4 border">
+                                    <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Niveles de Aprobaci&oacute;n</h3>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        {% if resultado and resultado.matrix %}
+                                        <div class="text-center p-3 bg-white rounded-lg border">
+                                            <p class="text-xs text-gray-500">Pol&iacute;ticas</p>
+                                            <p class="text-2xl font-bold {% if resultado.matrix.politicas >= 3 %}text-green-600{% elif resultado.matrix.politicas >= 2 %}text-yellow-500{% else %}text-red-500{% endif %}">{{ resultado.matrix.politicas }}</p>
+                                        </div>
+                                        <div class="text-center p-3 bg-white rounded-lg border">
+                                            <p class="text-xs text-gray-500">Score</p>
+                                            <p class="text-2xl font-bold {% if resultado.matrix.score_nivel >= 3 %}text-green-600{% elif resultado.matrix.score_nivel >= 2 %}text-yellow-500{% else %}text-red-500{% endif %}">{{ resultado.matrix.score_nivel }}</p>
+                                        </div>
+                                        <div class="text-center p-3 bg-white rounded-lg border">
+                                            <p class="text-xs text-gray-500">Capacidad Pago</p>
+                                            <p class="text-2xl font-bold {% if resultado.matrix.capacidad >= 3 %}text-green-600{% elif resultado.matrix.capacidad >= 2 %}text-yellow-500{% else %}text-red-500{% endif %}">{{ resultado.matrix.capacidad }}</p>
+                                        </div>
+                                        <div class="text-center p-3 bg-white rounded-lg border">
+                                            <p class="text-xs text-gray-500">Producto</p>
+                                            <p class="text-2xl font-bold {% if resultado.matrix.producto >= 3 %}text-green-600{% elif resultado.matrix.producto >= 2 %}text-yellow-500{% else %}text-red-500{% endif %}">{{ resultado.matrix.producto }}</p>
+                                        </div>
+                                        {% else %}
+                                        <div class="text-center p-3 bg-white rounded-lg border">
+                                            <p class="text-xs text-gray-500">Pol&iacute;ticas</p>
+                                            <p class="text-2xl font-bold text-green-600">4</p>
+                                        </div>
+                                        <div class="text-center p-3 bg-white rounded-lg border">
+                                            <p class="text-xs text-gray-500">Score</p>
+                                            <p class="text-2xl font-bold text-green-600">4</p>
+                                        </div>
+                                        <div class="text-center p-3 bg-white rounded-lg border">
+                                            <p class="text-xs text-gray-500">Capacidad Pago</p>
+                                            <p class="text-2xl font-bold text-red-500">1</p>
+                                        </div>
+                                        <div class="text-center p-3 bg-white rounded-lg border">
+                                            <p class="text-xs text-gray-500">Producto</p>
+                                            <p class="text-2xl font-bold text-green-600">4</p>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="mt-3 pt-3 border-t">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-gray-700 font-medium text-sm">Variables Ponderadas</span>
+                                            <span class="text-xl font-bold text-gray-800">{% if resultado and resultado.matrix %}{{ '%.2f'|format(resultado.matrix.ponderado) }}{% else %}3.25{% endif %}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div class="bg-gray-50 rounded-lg p-4 border">
+                                    <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Scores</h3>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div class="text-center p-4 card-propio-blue rounded-lg">
+                                            <p class="text-xs text-gray-500">Credit Score</p>
+                                            <p class="text-3xl font-bold text-propio-blue">{% if resultado and resultado.credit_score %}{{ resultado.credit_score.score|round|int }}{% else %}812{% endif %}/1000</p>
+                                        </div>
+                                        <div class="text-center p-4 card-propio-blue rounded-lg">
+                                            <p class="text-xs text-gray-500">Asset Score</p>
+                                            <p class="text-3xl font-bold text-propio-blue">{% if resultado and resultado.asset_score %}{{ resultado.asset_score.score|round|int }}{% else %}704{% endif %}/1000</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4 border">
+                                    <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Matriz de Rating</h3>
+                                    <div style="overflow-x: auto;">
+                                        <table class="w-full text-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th class="p-2 text-left bg-gray-200" rowspan="2" style="border-radius: 0.5rem 0 0 0;">Asset Score</th>
+                                                    <th colspan="5" class="p-2 text-center bg-gray-200">Credit Score</th>
+                                                </tr>
+                                                <tr>
+                                                    <th class="p-1 text-center bg-gray-200 text-xs">&gt; 875</th>
+                                                    <th class="p-1 text-center bg-gray-200 text-xs">750-875</th>
+                                                    <th class="p-1 text-center bg-gray-200 text-xs">625-750</th>
+                                                    <th class="p-1 text-center bg-gray-200 text-xs">500-625</th>
+                                                    <th class="p-1 text-center bg-gray-200 text-xs" style="border-radius: 0 0.5rem 0 0;">&lt; 500</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="p-2 font-medium bg-gray-100 text-xs">&gt; 800</td>
+                                                    <td class="p-2 text-center font-semibold matriz-aaa">AAA</td>
+                                                    <td class="p-2 text-center font-semibold matriz-aaa">AA+</td>
+                                                    <td class="p-2 text-center font-semibold matriz-aaa">AA</td>
+                                                    <td class="p-2 text-center font-semibold matriz-aa">AA-</td>
+                                                    <td class="p-2 text-center font-semibold matriz-aa">A</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 font-medium bg-gray-100 text-xs">700-800</td>
+                                                    <td class="p-2 text-center font-semibold matriz-aaa">AA+</td>
+                                                    <td class="p-2 text-center font-bold matriz-aaa matriz-selected">AA</td>
+                                                    <td class="p-2 text-center font-semibold matriz-aa">A</td>
+                                                    <td class="p-2 text-center font-semibold matriz-bbb">BBB</td>
+                                                    <td class="p-2 text-center font-semibold matriz-bb">BB</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 font-medium bg-gray-100 text-xs">600-700</td>
+                                                    <td class="p-2 text-center font-semibold matriz-aaa">AA</td>
+                                                    <td class="p-2 text-center font-semibold matriz-aa">A</td>
+                                                    <td class="p-2 text-center font-semibold matriz-bbb">BBB</td>
+                                                    <td class="p-2 text-center font-semibold matriz-bb">BB</td>
+                                                    <td class="p-2 text-center font-semibold matriz-b">B</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 font-medium bg-gray-100 text-xs">500-600</td>
+                                                    <td class="p-2 text-center font-semibold matriz-aa">AA-</td>
+                                                    <td class="p-2 text-center font-semibold matriz-bbb">BBB</td>
+                                                    <td class="p-2 text-center font-semibold matriz-bb">BB</td>
+                                                    <td class="p-2 text-center font-semibold matriz-b">B</td>
+                                                    <td class="p-2 text-center font-semibold matriz-b">B-</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="p-2 font-medium bg-gray-100 text-xs" style="border-radius: 0 0 0 0.5rem;">&lt; 500</td>
+                                                    <td class="p-2 text-center font-semibold matriz-aa">A</td>
+                                                    <td class="p-2 text-center font-semibold matriz-bb">BB</td>
+                                                    <td class="p-2 text-center font-semibold matriz-b">B</td>
+                                                    <td class="p-2 text-center font-semibold matriz-ccc">CCC</td>
+                                                    <td class="p-2 text-center font-semibold matriz-ccc" style="border-radius: 0 0 0.5rem 0;">CC</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-4 border">
+                                    <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Escala de Ratings</h3>
+                                    <div class="grid grid-cols-3 gap-2 text-xs">
+                                        <div>
+                                            <p class="font-medium mb-1" style="color: #15803d;">Grado de Inversi&oacute;n</p>
+                                            <p class="text-gray-600">AAA - Solvencia m&aacute;xima</p>
+                                            <p class="text-gray-600">AA+ - Solvencia muy alta</p>
+                                            <p class="text-gray-600">A - Solvencia alta</p>
+                                            <p class="text-gray-600">BBB - Solvencia media-alta</p>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium mb-1" style="color: #ca8a04;">Especulativo</p>
+                                            <p class="text-gray-600">BB - Especulativo</p>
+                                            <p class="text-gray-600">B - D&eacute;bil</p>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium mb-1" style="color: #dc2626;">Alto Riesgo</p>
+                                            <p class="text-gray-600">CCC - Muy d&eacute;bil</p>
+                                            <p class="text-gray-600">CC - Alto riesgo default</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TEST DE ESTRÉS SECTION (added within Análisis Financiero) -->
+                        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid #e5e7eb;">
+                            <h3 class="font-semibold text-gray-800 mb-4">Test de Estr&eacute;s + Gates de Admisi&oacute;n</h3>
+                            <div class="grid gap-4" style="grid-template-columns: 1fr 1fr;">
+                                <div>
+                                    <div class="bg-gray-50 rounded-lg p-4 border mb-3">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <span class="text-sm text-gray-500 uppercase tracking-wide font-semibold">Clasificaci&oacute;n de Ingreso</span>
+                                            <span class="gate-badge gate-pass">{{ form.get('tipo_contrato', 'Dependiente') }} &mdash; Contrato de trabajo</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 1rem; margin-top: 0.75rem;">
+                                            <div style="background: var(--propio-blue); color: white; border-radius: 12px; padding: 0.75rem 1.25rem; text-align: center;">
+                                                <p class="text-xs" style="color: #374151;">Estr&eacute;s aplicado</p>
+                                                <p class="text-3xl font-bold">{% if resultado and resultado.stress_test %}{{ resultado.stress_test.haircut_pct|round|int }}{% else %}10{% endif %}%</p>
+                                            </div>
+                                            <div class="text-sm text-gray-600" style="flex: 1;">
+                                                <p>{% if resultado and resultado.stress_test %}{{ resultado.stress_test.clasificacion|default('Dependiente') }}{% else %}Ambos titulares con contrato indefinido.{% endif %}</p>
+                                                <p class="text-xs text-gray-400 mt-1">Cliente: {{ form.get('empleador', 'AES Andes') }} ({{ form.get('antiguedad', 'Nov 2024') }}) {% if form.get('codeudor_empleador') %}&bull; Codeudor(a): {{ form.get('codeudor_empleador') }} ({{ form.get('codeudor_antiguedad', '') }}){% endif %}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="stress-card stress-pass">
+                                        <p class="text-sm font-semibold text-green-600 mb-2">&#10003; Secuencia de admisi&oacute;n</p>
+                                        <div class="text-sm" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                            <div class="flex justify-between"><span class="text-gray-600">1. Estr&eacute;s 10% aplicado</span><span class="text-green-600 font-medium">&#10003;</span></div>
+                                            <div class="flex justify-between"><span class="text-gray-600">2. Ratios estresados evaluados</span><span class="text-green-600 font-medium">&#10003; Pass</span></div>
+                                            <div class="flex justify-between"><span class="text-gray-600">2b. CV ingresos evaluado</span><span class="text-green-600 font-medium">&#10003; 0.006 &lt; 0.08</span></div>
+                                            <div class="flex justify-between"><span class="text-gray-600">3. Meta buffer asignada</span><span class="font-medium">2 meses</span></div>
+                                            <div class="flex justify-between"><span class="text-gray-600">4. Estructura cuota</span><span class="font-medium" style="color: var(--propio-orange);">Decreciente &mdash; &alpha;=1.191</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="bg-gray-50 rounded-lg p-4 border">
+                                        <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Ratios Originales vs Estresados</h3>
+                                        <table class="w-full text-sm">
+                                            <thead>
+                                                <tr class="text-gray-500">
+                                                    <th class="pb-2 text-left">Ratio</th>
+                                                    <th class="pb-2 text-right">Original</th>
+                                                    <th class="pb-2 text-right">Estresado (10%)</th>
+                                                    <th class="pb-2 text-right">Estado</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="border-t"><td class="py-2">Ingreso combinado</td><td class="text-right">{{ form.get('ingreso_formato', '$3.300.000') }}</td><td class="text-right font-medium">{% if resultado and resultado.stress_test %}{{ resultado.stress_test.ingreso_estresado_fmt|default('—') }}{% else %}$2.970.000{% endif %}</td><td class="text-right">&mdash;</td></tr>
+                                                <tr class="border-t"><td class="py-2">Cuota / Ingreso</td><td class="text-right">{% if resultado and resultado.postulante %}{{ '%.1f'|format(resultado.postulante.ratio * 100) }}{% else %}36.7{% endif %}%</td><td class="text-right font-medium">{% if resultado and resultado.stress_test %}{{ '%.1f'|format(resultado.stress_test.ci_estresado * 100) }}{% else %}40.8{% endif %}%</td><td class="text-right"><span class="gate-badge {% if resultado and resultado.stress_test and resultado.stress_test.hard_gate %}gate-pass{% else %}gate-fail{% endif %}">{% if resultado and resultado.stress_test and resultado.stress_test.hard_gate %}PASS{% else %}FAIL{% endif %}</span></td></tr>
+                                                <tr class="border-t"><td class="py-2">GG Fin. / Ingreso</td><td class="text-right">{{ form.get('gg_fin_ingreso', '14.8') }}%</td><td class="text-right font-medium">{% if resultado and resultado.stress_test %}{{ '%.1f'|format(resultado.stress_test.gg_fin_estresado * 100) }}{% else %}16.4{% endif %}%</td><td class="text-right"><span class="gate-badge gate-pass">PASS</span></td></tr>
+                                                <tr class="border-t"><td class="py-2">Egreso Total / Renta</td><td class="text-right">{{ form.get('egreso_total_renta', '51.6') }}%</td><td class="text-right font-medium">{% if resultado and resultado.stress_test %}{{ '%.1f'|format(resultado.stress_test.egreso_estresado * 100) }}{% else %}57.3{% endif %}%</td><td class="text-right"><span class="gate-badge gate-pass">PASS</span></td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="bg-gray-50 rounded-lg p-4 border" style="margin-top: 0.75rem;">
+                                        <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Gates de Admisi&oacute;n</h3>
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div class="text-center p-3 bg-white rounded-lg border">
+                                                <p class="text-xs text-gray-500">Asset Score</p>
+                                                <p class="text-xl font-bold text-green-600">{% if resultado and resultado.asset_score %}{{ resultado.asset_score.score|round|int }}{% else %}704{% endif %}</p>
+                                                <p class="text-xs text-gray-400">&ge; 600 &#10003;</p>
+                                            </div>
+                                            <div class="text-center p-3 bg-white rounded-lg border">
+                                                <p class="text-xs text-gray-500">Credit Score</p>
+                                                <p class="text-xl font-bold text-green-600">{% if resultado and resultado.credit_score %}{{ resultado.credit_score.score|round|int }}{% else %}812{% endif %}</p>
+                                                <p class="text-xs text-gray-400">Sin protestos &#10003;</p>
+                                            </div>
+                                            <div class="text-center p-3 bg-white rounded-lg border">
+                                                <p class="text-xs text-gray-500">Rating Matriz</p>
+                                                <p class="text-xl font-bold text-green-600">{% if resultado and resultado.matrix %}{{ resultado.matrix.rating }}{% else %}AA{% endif %}</p>
+                                                <p class="text-xs text-gray-400">{% if resultado and resultado.matrix %}Nivel {{ resultado.matrix.nivel }}{% else %}Nivel 4{% endif %} &#10003;</p>
+                                            </div>
+                                            <div class="text-center p-3 bg-white rounded-lg border">
+                                                <p class="text-xs text-gray-500">Morosidades</p>
+                                                <p class="text-xl font-bold text-green-600">{{ form.get('morosidades', '$0') }}</p>
+                                                <p class="text-xs text-gray-400">Sin mora &#10003;</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- 4. INFORMACIÓN DEL ACTIVO -->
+            <!-- ============================================================ -->
+            <div class="bg-white rounded-xl shadow overflow-hidden" data-group="activo">
+                <button onclick="toggleAccordion('activo')" class="accordion-btn">
+                    <span class="font-semibold text-gray-800">Informaci&oacute;n del Activo</span>
+                    <svg id="chevron-activo" class="chevron" style="width: 1.25rem; height: 1.25rem; color: #6b7280;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="content-activo" class="accordion-content">
+                    <div class="p-6">
+                        <div class="bg-gray-50 rounded-lg p-4 border mb-4">
+                            <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Colateral (Propiedad)</h3>
+                            <div class="grid gap-4 text-sm" style="grid-template-columns: repeat(5, 1fr);">
+                                <div style="display: flex; flex-direction: column;"><span class="text-gray-500">Status</span><span class="font-medium">{{ form.get('status_propiedad', 'Propiedad Usada') }}</span></div>
+                                <div style="display: flex; flex-direction: column;"><span class="text-gray-500">Comuna</span><span class="font-medium">{{ form.get('comuna', 'Padre Hurtado') }}</span></div>
+                                <div style="display: flex; flex-direction: column;"><span class="text-gray-500">Tipo</span><span class="font-medium">{{ form.get('tipo_propiedad_cat', 'Casa') }}</span></div>
+                                <div style="display: flex; flex-direction: column;"><span class="text-gray-500">Tipolog&iacute;a</span><span class="font-medium">{{ form.get('tipologia', '3D+2B') }}</span></div>
+                                <div style="display: flex; flex-direction: column;"><span class="text-gray-500">Superficie &uacute;til</span><span class="font-medium">{{ form.get('superficie', '91.41') }} m&sup2;</span></div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4 border mb-4">
+                            <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Pricing &mdash; An&aacute;lisis de Valor</h3>
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="text-gray-500" style="text-align: left; background: white;">
+                                        <th class="p-2">Concepto</th>
+                                        <th class="p-2 text-right">Inmobiliaria</th>
+                                        <th class="p-2 text-right">PROPIO</th>
+                                        <th class="p-2 text-right">Mercado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td class="p-2">Precio venta</td><td class="text-right font-medium">4.487 UF</td><td class="text-right font-medium">4.039 UF</td><td class="text-right font-medium">5.089 UF</td></tr>
+                                    <tr style="background: white;"><td class="p-2">UF/m&sup2;</td><td class="text-right">49.1 UF</td><td class="text-right">44.2 UF</td><td class="text-right">55.7 UF</td></tr>
+                                    <tr><td class="p-2">Pie</td><td class="text-right">448 UF (10%)</td><td class="text-right">107 UF (2.4%)</td><td class="text-right">&mdash;</td></tr>
+                                    <tr style="background: white;"><td class="p-2">Financiamiento</td><td class="text-right">4.039 UF</td><td class="text-right">4.039 UF</td><td class="text-right">&mdash;</td></tr>
+                                </tbody>
+                            </table>
+                            <div style="margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: #FFF3ED; border-radius: 6px; border: 1px solid #FFD4BC;">
+                                <p class="text-xs text-gray-600"><strong>Descuento PROPIO vs Mercado:</strong> PROPIO compra a UF 4.039 (precio inmobiliaria menos pie) vs precio mercado UF 5.089 &rarr; <strong style="color: var(--propio-orange);">20.6% bajo mercado</strong>. El strike queda fijado al precio de compra.</p>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4 border mb-4">
+                            <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Cap Rates &mdash; Retorno sobre Activo</h3>
+                            <div style="height: 200px;">
+                                <canvas id="capRatesChart"></canvas>
+                            </div>
+                            <div class="grid grid-cols-3 gap-3 text-center mt-3">
+                                <div class="p-2 rounded-lg" style="background: var(--propio-light-orange); border: 1px solid #FFD4BC;">
+                                    <p class="text-xs text-gray-500">PROPIO Cuota</p>
+                                    <p class="font-bold text-lg text-propio-orange">9.81%</p>
+                                    <p class="text-xs text-gray-400">Cuota/Valor activo</p>
+                                </div>
+                                <div class="p-2 rounded-lg" style="background: var(--propio-light-blue); border: 1px solid #B8CCDF;">
+                                    <p class="text-xs text-gray-500">PROPIO Arriendo</p>
+                                    <p class="font-bold text-lg text-propio-blue">6.09%</p>
+                                    <p class="text-xs text-gray-400">Arriendo equiv./Valor</p>
+                                </div>
+                                <div class="p-2 rounded-lg bg-gray-50 border">
+                                    <p class="text-xs text-gray-500">Mercado</p>
+                                    <p class="font-bold text-lg text-gray-700">4.83%</p>
+                                    <p class="text-xs text-gray-400">Promedio zona</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid gap-4" style="grid-template-columns: 1fr 1fr;">
+                            <div class="bg-gray-50 rounded-lg p-4 border">
+                                <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Comparables Arriendo</h3>
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="text-gray-500" style="text-align: left; background: white;">
+                                            <th class="p-2">Propiedad</th>
+                                            <th class="p-2 text-right">UF/mes</th>
+                                            <th class="p-2 text-right">UF/m&sup2;</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td class="p-2 text-xs">Casa 3D2B Padre Hurtado 85m&sup2;</td><td class="text-right">20.5</td><td class="text-right">0.241</td></tr>
+                                        <tr style="background: white;"><td class="p-2 text-xs">Casa 3D1B Padre Hurtado 78m&sup2;</td><td class="text-right">18.0</td><td class="text-right">0.231</td></tr>
+                                        <tr><td class="p-2 text-xs">Casa 3D2B Padre Hurtado 95m&sup2;</td><td class="text-right">22.8</td><td class="text-right">0.240</td></tr>
+                                        <tr class="border-t font-medium"><td class="p-2">Promedio</td><td class="text-right">20.4</td><td class="text-right">0.237</td></tr>
+                                    </tbody>
+                                </table>
+                                <p class="text-xs text-gray-400 mt-2">Fuente: Portal Inmobiliario</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-lg p-4 border">
+                                <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Comparables Venta</h3>
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="text-gray-500" style="text-align: left; background: white;">
+                                            <th class="p-2">Propiedad</th>
+                                            <th class="p-2 text-right">UF</th>
+                                            <th class="p-2 text-right">UF/m&sup2;</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td class="p-2 text-xs">Casa 3D2B Padre Hurtado 90m&sup2;</td><td class="text-right">5.200</td><td class="text-right">57.8</td></tr>
+                                        <tr style="background: white;"><td class="p-2 text-xs">Casa 3D2B Padre Hurtado 88m&sup2;</td><td class="text-right">4.980</td><td class="text-right">56.6</td></tr>
+                                        <tr><td class="p-2 text-xs">Casa 3D1B Padre Hurtado 85m&sup2;</td><td class="text-right">5.087</td><td class="text-right">59.8</td></tr>
+                                        <tr class="border-t font-medium"><td class="p-2">Promedio</td><td class="text-right">5.089</td><td class="text-right">58.1</td></tr>
+                                    </tbody>
+                                </table>
+                                <p class="text-xs text-gray-400 mt-2">Fuente: Portal Inmobiliario</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- 5. ESTABILIDAD DE INGRESOS — GATE CV -->
+            <!-- ============================================================ -->
+            <div class="bg-white rounded-xl shadow overflow-hidden" data-group="financiero">
+                <button onclick="toggleAccordion('income')" class="accordion-btn">
+                    <span class="font-semibold text-gray-800">Estabilidad de Ingresos &mdash; Gate CV</span>
+                    <svg id="chevron-income" class="chevron" style="width: 1.25rem; height: 1.25rem; color: #6b7280;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="content-income" class="accordion-content">
+                    <div class="p-6">
+                        <div class="grid gap-4" style="grid-template-columns: 1fr 1fr;">
+                            <div>
+                                <div class="text-sm" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <div class="flex justify-between"><span class="text-gray-600">Ingreso promedio (haberes)</span><span class="font-medium">{{ form.get('ingreso_promedio_fmt', '$3,997,549') }}</span></div>
+                                    <div class="flex justify-between"><span class="text-gray-600">Desviaci&oacute;n est&aacute;ndar</span><span class="font-medium">{{ form.get('desviacion_fmt', '$24,918') }}</span></div>
+                                    <div class="flex justify-between"><span class="text-gray-600">CV (&sigma;/&mu;)</span><span class="font-bold {% if resultado and resultado.gates %}{% if resultado.gates.cv_pass %}text-green-600{% else %}text-red-500{% endif %}{% else %}text-green-600{% endif %}" style="font-size: 1.25rem;">{% if resultado and resultado.postulante %}{{ '%.3f'|format(resultado.postulante.cv) }}{% else %}{{ form.get('cv', '0.006') }}{% endif %}</span></div>
+                                    <div style="border-top: 1px solid #e5e7eb; padding-top: 0.5rem; margin-top: 0.25rem;">
+                                        <div class="flex justify-between"><span class="text-gray-600">% Ingreso fijo</span><span class="font-medium">98.8%</span></div>
+                                        <div class="flex justify-between"><span class="text-gray-600">% Ingreso variable</span><span class="font-medium">1.2% (solo horas extra)</span></div>
+                                        <div class="flex justify-between"><span class="text-gray-600">Clasificaci&oacute;n</span><span class="gate-badge gate-pass">Dependiente &mdash; Contrato indefinido</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-center p-4 rounded-lg" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
+                                    <p class="text-xs text-gray-500 uppercase tracking-wide">Gate CV</p>
+                                    <p class="text-4xl font-bold {% if resultado and resultado.gates and resultado.gates.cv_pass %}text-green-600{% elif resultado and resultado.gates %}text-red-500{% else %}text-green-600{% endif %}">{% if resultado and resultado.gates %}{% if resultado.gates.cv_pass %}PASS{% else %}FAIL{% endif %}{% else %}PASS{% endif %}</p>
+                                    <p class="text-sm text-gray-500 mt-1">{% if resultado and resultado.postulante %}{{ '%.3f'|format(resultado.postulante.cv) }}{% else %}0.006{% endif %} &lt; 0.08</p>
+                                </div>
+                                <div class="text-center p-3 rounded-lg border mt-3" style="background: white;">
+                                    <p class="text-xs text-gray-500">Trampa Pie Alto</p>
+                                    <p class="text-lg font-bold text-gray-400">N/A</p>
+                                    <p class="text-xs text-gray-400">Pie = 10% (&lt; 15%) &mdash; no aplica</p>
+                                </div>
+                                <div style="margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: #FFF3ED; border-radius: 6px; border: 1px solid #FFD4BC;">
+                                    <p class="text-xs text-gray-600"><strong>Regla:</strong> Si pie &ge; 15%, se exige CV &lt; 0.08 como condici&oacute;n adicional.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 0.75rem;">
+                            <p class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2">Detalle Liquidaciones (3 meses)</p>
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="text-gray-500" style="text-align: left; background: white;">
+                                        <th class="p-2">Componente</th>
+                                        <th class="p-2 text-right">Mes 1</th>
+                                        <th class="p-2 text-right">Mes 2</th>
+                                        <th class="p-2 text-right">Mes 3</th>
+                                        <th class="p-2 text-right">CV</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td class="p-2">Sueldo Base</td><td class="text-right">$3,037,000</td><td class="text-right">$3,037,000</td><td class="text-right">$3,037,000</td><td class="text-right text-green-600 font-medium">0%</td></tr>
+                                    <tr style="background: white;"><td class="p-2">Gratificaci&oacute;n</td><td class="text-right">$418,792</td><td class="text-right">$418,792</td><td class="text-right">$418,792</td><td class="text-right text-green-600 font-medium">0%</td></tr>
+                                    <tr><td class="p-2">Bonos</td><td class="text-right">$473,193</td><td class="text-right">$473,193</td><td class="text-right">$473,193</td><td class="text-right text-green-600 font-medium">0%</td></tr>
+                                    <tr style="background: white;"><td class="p-2">Horas Extra</td><td class="text-right">$60,309</td><td class="text-right">$13,897</td><td class="text-right">$71,485</td><td class="text-right text-amber-600 font-medium">51.3%</td></tr>
+                                    <tr class="border-t font-medium"><td class="p-2">Total Haberes</td><td class="text-right">$4,009,294</td><td class="text-right">$3,962,882</td><td class="text-right">$4,020,470</td><td class="text-right text-green-600 font-bold">0.6%</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- 6. ANÁLISIS DE PLUSVALÍA + MOTOR DE AMORTIZACIÓN (merged) -->
+            <!-- ============================================================ -->
+            <div class="bg-white rounded-xl shadow overflow-hidden" data-group="activo">
+                <button onclick="toggleAccordion('pe')" class="accordion-btn">
+                    <span class="font-semibold text-gray-800">An&aacute;lisis de Plusval&iacute;a + Motor de Amortizaci&oacute;n</span>
+                    <svg id="chevron-pe" class="chevron rotate" style="width: 1.25rem; height: 1.25rem; color: #6b7280;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="content-pe" class="accordion-content">
+                    <div class="p-6">
+        <div class="pe-section shadow-lg">
+            <div class="grid gap-6" style="grid-template-columns: 220px 1fr 1fr;">
+                <div class="text-center">
+                    <p class="pe-label" style="margin-bottom: 0.5rem;">Veredicto</p>
+                    <div id="verdictBox" style="background: #22c55e30; border: 2px solid #22c55e; border-radius: 12px; padding: 1rem 0.5rem;">
+                        <p id="verdictText" style="font-size: 1.8rem; font-weight: 800; color: #22c55e;">ADMITIR</p>
+                    </div>
+                    <div style="margin-top: 0.75rem; background: #f3f4f6; border-radius: 8px; padding: 0.75rem 0.5rem;">
+                        <p class="text-xs" style="color: #4b5563;">Exit con plusval&iacute;a</p>
+                        <p id="exitMesDisplay" style="font-size: 2rem; font-weight: 800; color: var(--propio-orange);">Mes 37</p>
+                        <p class="text-xs" style="color: #6b7280; margin-top: 0.25rem;">Sin plusval&iacute;a: Mes 60</p>
+                    </div>
+                    <div style="margin-top: 0.75rem; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.6rem 0.5rem;">
+                        <p class="text-xs" style="color: #4b5563; margin-bottom: 0.3rem;">IPV anual (plusval&iacute;a)</p>
+                        <input type="range" id="ipvSlider" min="0" max="8" step="0.5" value="3" style="width: 100%; accent-color: var(--propio-orange); cursor: pointer;">
+                        <p id="ipvLabel" style="font-size: 1.2rem; font-weight: 700; color: var(--propio-orange); margin-top: 0.2rem;">3.0%</p>
+                    </div>
+                </div>
+                <div>
+                    <p class="pe-label" style="margin-bottom: 1rem;">Descomposici&oacute;n PE</p>
+                    <div style="margin-bottom: 1rem;">
+                        <div class="flex justify-between text-sm" style="margin-bottom: 2px;">
+                            <span style="color: #1f2937;">Test de Estr&eacute;s</span>
+                            <span class="font-semibold">PASS &#10003;</span>
+                        </div>
+                        <div class="decomp-bar"><div class="decomp-fill" style="width: 100%; background: #22c55e;"></div></div>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <div class="flex justify-between text-sm" style="margin-bottom: 2px;">
+                            <span style="color: #1f2937;">Gates Admisi&oacute;n</span>
+                            <span class="font-semibold">PASS &#10003;</span>
+                        </div>
+                        <div class="decomp-bar"><div class="decomp-fill" style="width: 100%; background: #22c55e;"></div></div>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <div style="margin-bottom: 1rem;">
+                            <div class="flex justify-between text-sm" style="margin-bottom: 2px;">
+                                <span style="color: #1f2937;">Estabilidad Ingresos (CV)</span>
+                                <span class="font-semibold">0.006 &mdash; PASS &#10003;</span>
+                            </div>
+                            <div class="decomp-bar"><div class="decomp-fill" style="width: 100%; background: #22c55e;"></div></div>
+                            <p class="text-xs" style="color: #9ca3af; margin-top: 2px;">Pie 10% (sin trampa pie alto)</p>
+                        </div>
+                        <div class="flex justify-between text-sm" style="margin-bottom: 2px;">
+                            <span style="color: #1f2937;">Equity Bono (pie+cuotas)</span>
+                            <span class="font-semibold" id="bonoPercent">53%</span>
+                        </div>
+                        <div class="decomp-bar"><div id="bonoBar" class="decomp-fill" style="width: 53%; background: #3b82f6;"></div></div>
+                        <p id="bonoDetail" class="text-xs" style="color: #9ca3af; margin-top: 2px;">UF 480/897 al mes 37 &mdash; sin plusval&iacute;a cierra al mes 60</p>
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <div class="flex justify-between text-sm" style="margin-bottom: 2px;">
+                            <span style="color: #1f2937;">Equity Opci&oacute;n (plusval&iacute;a)</span>
+                            <span class="font-semibold" style="color: var(--propio-orange);" id="opcionPercent">+49%</span>
+                        </div>
+                        <div class="decomp-bar"><div id="opcionBar" class="decomp-fill" style="width: 85%; background: var(--propio-orange);"></div></div>
+                        <p id="opcionDetail" class="text-xs" style="color: #9ca3af; margin-top: 2px;">UF 439 &rarr; total 102.4% &mdash; acelera exit de mes 60 a 37</p>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm" style="margin-bottom: 2px;">
+                            <span style="color: #1f2937;">Perfil Bancario al Exit</span>
+                            <span class="font-semibold" id="bancoGateLabel">PASS &#10003;</span>
+                        </div>
+                        <div class="decomp-bar"><div id="bancoGateBar" class="decomp-fill" style="width: 90%; background: #22c55e;"></div></div>
+                        <p id="bancoGateDetail" class="text-xs" style="color: #9ca3af; margin-top: 2px;">Dividendo 19 UF/mes &rarr; ratio 22.9% (&le;25%)</p>
+                    </div>
+                    <div style="margin-top: 1rem; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.6rem;">
+                        <p class="text-xs font-semibold" style="color: #1f2937; margin-bottom: 0.25rem;">Acumulaci&oacute;n de Equity &mdash; Nota Estructurada</p>
+                        <div style="height: 180px;">
+                            <canvas id="equityTimeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <p id="equityTitle" class="pe-label" style="margin-bottom: 0.75rem;">Ecuaci&oacute;n de Equity al Exit (Mes 37)</p>
+                    <div class="equity-bar-container" style="padding: 0.75rem;">
+                        <div class="flex justify-between text-xs" style="margin-bottom: 0.4rem; color: #374151;">
+                            <span id="eqBarLabel">Equity al mes 37</span>
+                            <span>Meta: UF 897 (20%)</span>
+                        </div>
+                        <div class="equity-bar" style="position: relative;">
+                            <div id="eqSegPie" class="equity-segment equity-pie-inicial" style="width: 12%;"><span>Pie</span></div>
+                            <div id="eqSegCuotas" class="equity-segment equity-amortizacion" style="width: 41%;"><span>Cuotas</span></div>
+                            <div id="eqSegPlusv" class="equity-segment equity-plusvalia" style="width: 47%;"><span>Plusval&iacute;a</span></div>
+                        </div>
+                        <div class="flex justify-between text-xs" style="margin-top: 0.4rem;">
+                            <span style="color: #3b82f6;">&#9632; Pie: UF 107</span>
+                            <span id="eqLegCuotas" style="color: #1E487B;">&#9632; Cuotas: UF 373</span>
+                            <span id="eqLegPlusv" style="color: var(--propio-orange);">&#9632; Plusval&iacute;a: UF 439</span>
+                        </div>
+                        <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #e5e7eb; font-size: 0.8rem;">
+                            <div class="flex justify-between">
+                                <span id="eqTotalLabel" style="color: #374151;">Total al mes 37</span>
+                                <span id="eqTotalValue" class="font-bold" style="color: #22c55e;">UF 919 / 897 &#10003;</span>
+                            </div>
+                            <div class="flex justify-between" style="margin-top: 0.2rem;">
+                                <span style="color: #374151;">Sin plusval&iacute;a</span>
+                                <span id="eqSinPlusv" class="font-medium" style="color: #4b5563;">UF 480 (53%) &mdash; cierra al mes 60</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 0.5rem; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.6rem 0.75rem; font-size: 0.78rem;">
+                        <p style="color: #1f2937; margin-bottom: 0.4rem; font-weight: 600;">C&aacute;lculo Plusval&iacute;a (100% para el cliente)</p>
+                        <div id="calcPlusvContainer" style="display: flex; flex-direction: column; gap: 0.2rem;"></div>
+                        <p style="color: #9ca3af; font-size: 0.6rem; margin-top: 0.3rem;">Retasaci&oacute;n formal al exit. Estimaci&oacute;n basada en IPV hist&oacute;rico de la zona.</p>
+                    </div>
+                    <div style="margin-top: 0.5rem; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 0.6rem 0.75rem; font-size: 0.78rem;">
+                        <p id="tableTitle" style="color: #1f2937; margin-bottom: 0.4rem; font-weight: 600;">&iquest;Por qu&eacute; mes 37? &mdash; Curva de equity</p>
+                        <table style="width: 100%; font-size: 0.7rem;">
+                            <thead>
+                                <tr style="color: #6b7280;">
+                                    <th style="text-align: left; padding: 2px 4px;">Mes</th>
+                                    <th style="text-align: right; padding: 2px 4px;">Bono</th>
+                                    <th style="text-align: right; padding: 2px 4px;">Opci&oacute;n</th>
+                                    <th style="text-align: right; padding: 2px 4px;">Total</th>
+                                    <th style="text-align: right; padding: 2px 4px;">vs Meta</th>
+                                </tr>
+                            </thead>
+                            <tbody id="equityTableBody"></tbody>
+                        </table>
+                        <p id="tableFooter" style="color: #9ca3af; font-size: 0.6rem; margin-top: 0.3rem;"></p>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 1.5rem; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1rem 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: center;">
+                <div>
+                    <p class="text-xs uppercase tracking-wide" style="color: #6b7280;">Veredicto Risk Assessment</p>
+                    <p id="verdictSummary" class="text-xl font-bold" style="margin-top: 0.25rem;">Admitir &mdash; Bono + Plusval&iacute;a cierran al mes 37 (102.4%)</p>
+                    <p id="verdictCadena" class="text-xs" style="color: #6b7280; margin-top: 0.4rem;">Estr&eacute;s &#10003; &rarr; Gates &#10003; &rarr; CV &#10003; &rarr; Equity &#10003; &rarr; Banco &#10003;</p>
+                </div>
+                <div style="background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 10px; padding: 0.75rem 1rem;">
+                    <p class="text-xs uppercase tracking-wide" style="color: #6b7280; margin-bottom: 0.5rem;">Gate 4: Cr&eacute;dito Hipotecario Post-Exit</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; font-size: 0.8rem;">
+                        <span style="color: #4b5563;">Saldo a financiar:</span>
+                        <span id="hipSaldo" class="font-semibold text-right">UF 3.590</span>
+                        <span style="color: #4b5563;">Dividendo (30 a&ntilde;os, 5%):</span>
+                        <span id="hipDividendo" class="font-semibold text-right">19.0 UF/mes</span>
+                        <span style="color: #4b5563;">Dividendo / Ingreso:</span>
+                        <span id="hipRatio" class="font-semibold text-right" style="color: #22c55e;">22.9%</span>
+                        <span style="color: #4b5563;">Umbral banco:</span>
+                        <span class="font-semibold text-right">&le; 25%</span>
+                    </div>
+                    <div id="hipVerdict" style="margin-top: 0.5rem; padding-top: 0.4rem; border-top: 1px solid #e5e7eb; font-size: 0.75rem;">
+                        <span style="color: #22c55e; font-weight: 700;">&#10003; Califica &mdash; </span>
+                        <span style="color: #4b5563;">Cuota baja de ~33 UF (PROPIO) a ~19 UF (banco). Inclusi&oacute;n financiera.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                        <!-- DIVISOR SUTIL -->
+                        <div style="margin: 2rem 0 1.5rem 0; height: 1px; background: linear-gradient(90deg, transparent, #e5e7eb, transparent);"></div>
+
+                        <!-- MOTOR DE AMORTIZACIÓN SECTION -->
+                        <div style="margin-top: 1.5rem;">
+                            <h3 class="font-semibold text-gray-800 mb-4">Motor de Amortizaci&oacute;n &mdash; Cuota Decreciente</h3>
+                            <div class="grid gap-4" style="grid-template-columns: 1fr 1fr;">
+                                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                    <div class="bg-gray-50 rounded-lg p-4 border">
+                                        <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Pre-Checks Factibilidad</h3>
+                                        <div class="text-sm" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                            <div class="flex justify-between items-center"><span class="text-gray-600">1. a_flat &gt; 0</span><span class="gate-badge gate-pass">13.17 UF &#10003;</span></div>
+                                            <div class="flex justify-between items-center"><span class="text-gray-600">2. &alpha;_max &ge; 1</span><span class="gate-badge gate-pass">1.221 &ge; 1 &#10003;</span></div>
+                                            <div class="flex justify-between items-center"><span class="text-gray-600">3. &alpha;_req &le; &alpha;_max</span><span class="gate-badge gate-pass">1.191 &le; 1.221 &#10003;</span></div>
+                                        </div>
+                                    </div>
+                                    <div class="card-propio-blue rounded-lg p-4">
+                                        <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Trazabilidad del Motor</h3>
+                                        <div class="text-sm" style="display: flex; flex-direction: column; gap: 0.35rem;">
+                                            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide" style="margin-bottom:0.1rem;">Inputs</p>
+                                            <div class="flex justify-between"><span class="text-gray-600">cuota_propio</span><span class="font-semibold">32.40 UF</span></div>
+                                            <div class="flex justify-between"><span class="text-gray-600">a_flat = (897&minus;107)/60</span><span class="font-semibold">13.17 UF/mes</span></div>
+                                            <div class="flex justify-between"><span class="text-gray-600">arriendo = cuota &minus; a_flat</span><span class="font-semibold">19.23 UF/mes</span></div>
+                                            <div class="flex justify-between"><span class="text-gray-600">Estr&eacute;s 10% &rarr; N</span><span class="font-semibold">2 meses</span></div>
+                                            <div class="flex justify-between"><span class="text-gray-600">Umbral / Ingreso nominal</span><span class="font-semibold">40% / 88.3 UF</span></div>
+                                            <div style="border-top: 1px solid #e5e7eb; padding-top:0.35rem; margin-top:0.1rem;">
+                                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide" style="margin-bottom:0.2rem;">Derivaci&oacute;n</p>
+                                                <div class="flex justify-between text-xs" style="background:#f3f4f6; border-radius:4px; padding:3px 6px;">
+                                                    <span class="text-gray-600">&alpha;_req = 1 + (2&times;19.23&times;59)/(13.17&times;900)</span>
+                                                    <span class="font-bold text-propio-orange">= 1.191</span>
+                                                </div>
+                                                <div class="flex justify-between text-xs" style="background:#f3f4f6; border-radius:4px; padding:3px 6px; margin-top:3px;">
+                                                    <span class="text-gray-600">&alpha;_max = (0.40&times;88.3&minus;19.23)/13.17</span>
+                                                    <span class="font-bold text-green-600">= 1.221</span>
+                                                </div>
+                                                <div class="flex justify-between text-xs" style="margin-top:3px;">
+                                                    <span class="text-gray-600">b = 2(&alpha;&minus;1)&times;a_flat/59</span>
+                                                    <span class="font-semibold">0.085 UF/mes</span>
+                                                </div>
+                                                <div class="flex justify-between text-xs" style="margin-top:3px;">
+                                                    <span class="text-gray-600">coef. peak = k(T&minus;k)/(T&minus;1), k=30</span>
+                                                    <span class="font-semibold">900/59 = 15.254</span>
+                                                </div>
+                                            </div>
+                                            <div style="border-top: 1px solid #e5e7eb; padding-top:0.35rem; margin-top:0.1rem;">
+                                                <div class="flex justify-between"><span class="text-gray-600">Buffer peak (mes 30)</span><span class="font-bold" style="color: #22c55e;">38.4 UF &asymp; 2&times; arriendo &#10003;</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="bg-gray-50 rounded-lg p-4 border">
+                                        <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">Cuota en Hitos Clave</h3>
+                                        <table class="w-full text-sm">
+                                            <thead>
+                                                <tr class="text-gray-500">
+                                                    <th class="pb-2 text-left">Mes</th>
+                                                    <th class="pb-2 text-right">Cuota</th>
+                                                    <th class="pb-2 text-right">vs Plana</th>
+                                                    <th class="pb-2 text-right">Buffer acum.</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="motorTableBody"></tbody>
+                                        </table>
+                                        <p class="text-xs text-gray-400 mt-2">a_t = &alpha;&middot;a&#8320; &minus; b&middot;(t&minus;1) &nbsp;|&nbsp; b = 2(&alpha;&minus;1)&middot;a&#8320;/59 &nbsp;|&nbsp; coef. peak = 900/59</p>
+                                    </div>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                    <div class="bg-gray-50 rounded-lg p-4 border">
+                                        <h3 class="font-semibold text-gray-700 mb-2 text-sm uppercase tracking-wide">Curva de Cuota &mdash; 60 Meses</h3>
+                                        <div style="height: 220px;">
+                                            <canvas id="motorCuotaChart"></canvas>
+                                        </div>
+                                    </div>
+                                    <div class="bg-gray-50 rounded-lg p-4 border">
+                                        <h3 class="font-semibold text-gray-700 mb-2 text-sm uppercase tracking-wide">Buffer Acumulado (Exceso sobre Trayectoria Plana)</h3>
+                                        <div style="height: 180px;">
+                                            <canvas id="motorBufferChart"></canvas>
+                                        </div>
+                                        <p class="text-xs text-gray-400 mt-2">Peak mes 30 = 38.4 UF = 2 meses de arriendo. Se libera linealmente hasta mes 60.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- 7. SIMILARITY MATCHING + MARCADORES SEMÁNTICOS -->
+            <!-- ============================================================ -->
+            <div class="bg-white rounded-xl shadow overflow-hidden" data-group="financiero">
+                <button onclick="toggleAccordion('similarity')" class="accordion-btn">
+                    <span class="font-semibold text-gray-800">Similarity Matching + Marcadores Sem&aacute;nticos</span>
+                    <svg id="chevron-similarity" class="chevron" style="width: 1.25rem; height: 1.25rem; color: #6b7280;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="content-similarity" class="accordion-content">
+                    <div class="p-6">
+                        <h3 class="font-semibold text-gray-800 mb-3">Top 5 &mdash; Precedentes m&aacute;s similares</h3>
+                        <table class="sim-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 32px;">#</th>
+                                    <th>Cliente</th>
+                                    <th style="text-align: right;">PD</th>
+                                    <th style="text-align: right;">Pie%</th>
+                                    <th style="text-align: right;">C/I%</th>
+                                    <th style="text-align: right;">CV</th>
+                                    <th style="width: 120px;">Similaridad</th>
+                                    <th>Outcome</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                        {% if resultado and resultado.matching and resultado.matching.similares %}
+                        {% for s in resultado.matching.similares[:5] %}
+                                <tr>
+                                    <td><span class="sim-rank sim-rank-{{ loop.index }}">{{ loop.index }}</span></td>
+                                    <td><div style="font-weight: 600;">{{ s.nombre }}</div><div style="font-size: 0.75rem; color: #6b7280;">{{ s.tipo|default('Dependiente') }}</div></td>
+                                    <td style="text-align: right;">{{ '%.1f'|format(s.pd * 100) }}%</td>
+                                    <td style="text-align: right;">{{ '%.1f'|format(s.pie * 100) }}%</td>
+                                    <td style="text-align: right;">{{ '%.1f'|format(s.ratio * 100) }}%</td>
+                                    <td style="text-align: right;">{{ '%.3f'|format(s.cv) }}</td>
+                                    <td><div class="sim-bar-container"><div class="sim-bar"><div class="sim-bar-fill {% if s.similaridad >= 80 %}high{% elif s.similaridad >= 60 %}mid{% else %}low{% endif %}" style="width: {{ s.similaridad|round|int }}%;"></div></div><div class="sim-value">{{ s.similaridad|round|int }}%</div></div></td>
+                                    <td><span class="outcome-badge outcome-{{ s.outcome }}">{{ s.outcome|capitalize }}</span></td>
+                                </tr>
+                        {% endfor %}
+                        {% else %}
+                                <tr>
+                                    <td><span class="sim-rank sim-rank-1">1</span></td>
+                                    <td><div style="font-weight: 600;">Carlos Mendoza</div><div style="font-size: 0.75rem; color: #6b7280;">Dependiente, 32 a&ntilde;os, Padre Hurtado</div></td>
+                                    <td style="text-align: right;">4.2%</td><td style="text-align: right;">12.0%</td><td style="text-align: right;">35.1%</td><td style="text-align: right;">0.009</td>
+                                    <td><div class="sim-bar-container"><div class="sim-bar"><div class="sim-bar-fill high" style="width: 92%;"></div></div><div class="sim-value">92%</div></div></td>
+                                    <td><span class="outcome-badge outcome-exit">Exit</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="sim-rank sim-rank-2">2</span></td>
+                                    <td><div style="font-weight: 600;">Mar&iacute;a Gonz&aacute;lez</div><div style="font-size: 0.75rem; color: #6b7280;">Dependiente, 28 a&ntilde;os, Maip&uacute;</div></td>
+                                    <td style="text-align: right;">5.8%</td><td style="text-align: right;">10.0%</td><td style="text-align: right;">38.2%</td><td style="text-align: right;">0.012</td>
+                                    <td><div class="sim-bar-container"><div class="sim-bar"><div class="sim-bar-fill high" style="width: 88%;"></div></div><div class="sim-value">88%</div></div></td>
+                                    <td><span class="outcome-badge outcome-exit">Exit</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="sim-rank sim-rank-3">3</span></td>
+                                    <td><div style="font-weight: 600;">Roberto Silva</div><div style="font-size: 0.75rem; color: #6b7280;">Dependiente, 35 a&ntilde;os, Puente Alto</div></td>
+                                    <td style="text-align: right;">6.1%</td><td style="text-align: right;">15.0%</td><td style="text-align: right;">33.5%</td><td style="text-align: right;">0.022</td>
+                                    <td><div class="sim-bar-container"><div class="sim-bar"><div class="sim-bar-fill high" style="width: 85%;"></div></div><div class="sim-value">85%</div></div></td>
+                                    <td><span class="outcome-badge outcome-exit">Exit</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="sim-rank sim-rank-4">4</span></td>
+                                    <td><div style="font-weight: 600;">Ana Rojas</div><div style="font-size: 0.75rem; color: #6b7280;">Dependiente, 27 a&ntilde;os, La Florida</div></td>
+                                    <td style="text-align: right;">3.9%</td><td style="text-align: right;">10.0%</td><td style="text-align: right;">40.1%</td><td style="text-align: right;">0.005</td>
+                                    <td><div class="sim-bar-container"><div class="sim-bar"><div class="sim-bar-fill mid" style="width: 79%;"></div></div><div class="sim-value">79%</div></div></td>
+                                    <td><span class="outcome-badge outcome-activo">Activo</span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="sim-rank sim-rank-5">5</span></td>
+                                    <td><div style="font-weight: 600;">Felipe Araya</div><div style="font-size: 0.75rem; color: #6b7280;">Dependiente, 31 a&ntilde;os, Pe&ntilde;alol&eacute;n</div></td>
+                                    <td style="text-align: right;">7.2%</td><td style="text-align: right;">11.0%</td><td style="text-align: right;">36.8%</td><td style="text-align: right;">0.018</td>
+                                    <td><div class="sim-bar-container"><div class="sim-bar"><div class="sim-bar-fill mid" style="width: 76%;"></div></div><div class="sim-value">76%</div></div></td>
+                                    <td><span class="outcome-badge outcome-exit">Exit</span></td>
+                                </tr>
+                        {% endif %}
+                            </tbody>
+                        </table>
+                        <div class="sim-brief-card">
+                            <div style="font-weight: 700; margin-bottom: 0.75rem;">Brief para Comit&eacute; de Admisi&oacute;n</div>
+                            <div class="sim-brief-text">{% if resultado and resultado.brief %}{{ resultado.brief }}{% else %}El postulante presenta un perfil de riesgo bajo con CV de 0.006, PD 5% y ratio cuota/ingreso de 36.7%. Los 5 precedentes m&aacute;s similares muestran 4 exits exitosos y 1 activo al d&iacute;a. El rating AA confirma solidez crediticia.{% endif %}</div>
+                        </div>
+                        <div style="background: #f9fafb; border-radius: 0.75rem; padding: 1rem; margin: 1rem 0;">
+                            <h3 class="font-semibold text-gray-800 text-sm mb-3">Mapa del Portfolio &mdash; PD vs Cuota/Ingreso</h3>
+                            <div style="position: relative; height: 320px;">
+                                <canvas id="simScatterChart"></canvas>
+                            </div>
+                        </div>
+                        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid #e5e7eb;">
+                            <h3 class="font-semibold text-gray-800 mb-4">An&aacute;lisis Sem&aacute;ntico (Capa 3 &mdash; Contexto Cualitativo)</h3>
+                            <div class="marcador-section">
+                                <div class="marcador-header">
+                                    <span class="marcador-id">M1</span>
+                                    <div style="flex: 1; margin-left: 0.75rem; font-weight: 700;">Morfolog&iacute;a Volatilidad</div>
+                                    <span class="marcador-nivel">{% if m1_result %}Nivel {{ m1_result.nivel }} &mdash; {{ m1_result.descripcion }}{% else %}NO EVALUADO{% endif %}</span>
+                                </div>
+                                <div class="marcador-contenido">{% if m1_result %}{{ m1_result.contenido }}{% else %}Sin API key configurada. Los marcadores sem&aacute;nticos requieren clave de Anthropic.{% endif %}</div>
+                            </div>
+                            <div class="marcador-section">
+                                <div class="marcador-header">
+                                    <span class="marcador-id">M2</span>
+                                    <div style="flex: 1; margin-left: 0.75rem; font-weight: 700;">Riesgo Contraparte</div>
+                                    <span class="marcador-nivel">{% if m2_result %}Nivel {{ m2_result.nivel }} &mdash; {{ m2_result.descripcion }}{% else %}NO EVALUADO{% endif %}</span>
+                                </div>
+                                <div class="marcador-contenido">{% if m2_result %}{{ m2_result.contenido }}{% else %}Sin API key configurada. Los marcadores sem&aacute;nticos requieren clave de Anthropic.{% endif %}</div>
+                            </div>
+                            <div class="marcador-section">
+                                <div class="marcador-header">
+                                    <span class="marcador-id">M3</span>
+                                    <div style="flex: 1; margin-left: 0.75rem; font-weight: 700;">Deuda Sombra</div>
+                                    <span class="marcador-nivel">{% if m3_result %}Nivel {{ m3_result.nivel }} &mdash; {{ m3_result.descripcion }}{% else %}NO IMPLEMENTADO{% endif %}</span>
+                                </div>
+                                <div class="marcador-contenido">{% if m3_result %}{{ m3_result.contenido }}{% else %}Requiere cartolas bancarias. Este marcador se activar&aacute; cuando se incorporen cartolas al proceso de admisi&oacute;n.{% endif %}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    <!-- Modal Comparacion Portfolio -->
+    <div id="portfolioModal" class="modal-overlay" onclick="closeModalOutside(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="text-lg font-semibold text-gray-800">Comparaci&oacute;n PD Sinacofi vs Portfolio PROPIO</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <p class="text-xs text-gray-500 px-1 mb-3">Este gr&aacute;fico posiciona el caso en evaluaci&oacute;n dentro del mapa de riesgo del portafolio PROPIO, comparando PD SINACOFI (riesgo externo) y capacidad de pago (m&eacute;trica interna).</p>
+            <div style="height: 400px;">
+                <canvas id="scatterChart"></canvas>
+            </div>
+            <div class="text-xs text-gray-500 mt-2 mb-1 px-1" style="line-height: 1.6;">
+                <strong>Cap. Pago:</strong> 1 = Baja | 2 = Media-baja | 3 = Media-alta | 4 = Alta<br>
+                <strong>PD SINACOFI (%):</strong> menor valor indica menor riesgo crediticio externo.
+            </div>
+            <div class="mt-3 pt-3 border-t">
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <span class="text-gray-500">PD Mediana Portfolio:</span>
+                        <span class="font-bold text-propio-blue ml-2">5.00%</span>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <span class="text-gray-500">Cap. Pago Mediana:</span>
+                        <span class="font-bold text-propio-blue ml-2">1</span>
+                    </div>
+                </div>
+                <div class="bg-green-50 border border-green-200 rounded-lg p-3 mt-3 text-sm text-green-800" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
+                    <strong>&#10003; Conclusi&oacute;n:</strong> El caso en evaluaci&oacute;n se ubica en la mediana del portafolio PROPIO.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var _motorChartsReady = false;
+        var motorCharts = [];
+        var _activeGroup = 'perfil';
+
+        function showGroup(group) {
+            _activeGroup = group;
+            // Ocultar todos los acordeones
+            document.querySelectorAll('[data-group]').forEach(function(el) {
+                el.style.display = 'none';
+                // Cerrar acordeones ocultos
+                var content = el.querySelector('.accordion-content');
+                var chevron = el.querySelector('.chevron');
+                if (content && content.classList.contains('open')) {
+                    content.classList.remove('open');
+                    if (chevron) chevron.classList.remove('rotate');
+                }
+            });
+            // Mostrar solo los del grupo seleccionado
+            document.querySelectorAll('[data-group="' + group + '"]').forEach(function(el) {
+                el.style.display = '';
+            });
+            // Expandir el primer acordeón del grupo
+            var first = document.querySelector('[data-group="' + group + '"] .accordion-content');
+            var firstChevron = document.querySelector('[data-group="' + group + '"] .chevron');
+            if (first) {
+                first.classList.add('open');
+                if (firstChevron) firstChevron.classList.add('rotate');
+                // Si el grupo activo incluye pe, inicializar motor charts
+                if (group === 'activo') {
+                    setTimeout(function() {
+                        if (!_motorChartsReady) {
+                            _motorChartsReady = true;
+                            initMotorCharts();
+                        }
+                        if (typeof Chart !== 'undefined') {
+                            Object.values(Chart.instances).forEach(function(c) { try { c.resize(); } catch(e) {} });
+                        }
+                    }, 520);
+                }
+                if (typeof Chart !== 'undefined') {
+                    setTimeout(function() {
+                        Object.values(Chart.instances).forEach(function(c) { try { c.resize(); } catch(e) {} });
+                    }, 520);
+                }
+            }
+            // Actualizar botones
+            document.querySelectorAll('.nav-group-btn').forEach(function(btn) {
+                btn.style.background = 'white';
+                btn.style.color = 'var(--propio-blue)';
+            });
+            var activeBtn = document.getElementById('nav-' + group);
+            if (activeBtn) {
+                activeBtn.style.background = 'var(--propio-blue)';
+                activeBtn.style.color = 'white';
+            }
+            // Scroll al inicio de acordeones
+            document.querySelector('[data-group="' + group + '"]').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Inicializar: mostrar solo grupo perfil al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            showGroup('perfil');
+        });
+
+        function toggleAccordion(id) {
+            var content = document.getElementById('content-' + id);
+            var chevron = document.getElementById('chevron-' + id);
+            content.classList.toggle('open');
+            chevron.classList.toggle('rotate');
+            if (content.classList.contains('open')) {
+                if (id === 'pe') {
+                    setTimeout(function() {
+                        if (!_motorChartsReady) {
+                            _motorChartsReady = true;
+                            initMotorCharts();
+                        } else {
+                            motorCharts.forEach(function(c) { try { c.resize(); } catch(e) {} });
+                        }
+                        if (typeof Chart !== 'undefined') {
+                            Object.values(Chart.instances).forEach(function(c) {
+                                try { c.resize(); } catch(e) {}
+                            });
+                        }
+                    }, 520);
+                } else {
+                    setTimeout(function() {
+                        if (typeof Chart !== 'undefined') {
+                            Object.values(Chart.instances).forEach(function(c) {
+                                try { c.resize(); } catch(e) {}
+                            });
+                        }
+                    }, 520);
+                }
+            }
+        }
+
+        // V1 Modal functions
+        var scatterChartInstance = null;
+        function openModal() {
+            document.getElementById('portfolioModal').classList.add('open');
+            setTimeout(renderScatterChart, 100);
+        }
+        function closeModal() {
+            document.getElementById('portfolioModal').classList.remove('open');
+            if (scatterChartInstance) { scatterChartInstance.destroy(); scatterChartInstance = null; }
+        }
+        function closeModalOutside(event) {
+            if (event.target === document.getElementById('portfolioModal')) { closeModal(); }
+        }
+        function renderScatterChart() {
+            var ctx = document.getElementById('scatterChart').getContext('2d');
+            var raw = [
+                { name: 'Bel\u00e9n Vidal', pd: 4.07, cap: 1 },
+                { name: 'Yenny Barreto', pd: 5.00, cap: 4 },
+                { name: 'Gabriela Gonzalez', pd: 5.00, cap: 1 },
+                { name: 'Hugo Ayala', pd: 10.01, cap: 4 },
+                { name: 'Alicia Vega', pd: 5.00, cap: 1 },
+                { name: 'Adrian Zabaleta', pd: 5.00, cap: 1 },
+                { name: 'Juan Garcia', pd: 5.00, cap: 1 },
+                { name: 'Brenda Ramirez', pd: 5.00, cap: 2 },
+                { name: 'Gerardo Aguayo', pd: 5.00, cap: 1 },
+                { name: 'Nuevo Caso', pd: 5.00, cap: 4 }
+            ];
+            var groups = {};
+            raw.forEach(function(d) {
+                var key = d.pd + '|' + d.cap;
+                if (!groups[key]) groups[key] = { x: d.pd, y: d.cap, count: 0, names: [] };
+                groups[key].count++; groups[key].names.push(d.name);
+            });
+            var bubbleData = Object.values(groups).map(function(g) {
+                return { x: g.x, y: g.y, r: 10 + (g.count - 1) * 8, count: g.count, names: g.names };
+            });
+            scatterChartInstance = new Chart(ctx, {
+                type: 'bubble',
+                data: {
+                    datasets: [
+                        { label: 'Portfolio PROPIO', data: bubbleData, backgroundColor: 'rgba(30,72,123,0.6)', borderColor: '#1E487B', borderWidth: 2, order: 2 },
+                        { label: '\u25CF Caso en Evaluaci\u00f3n', data: [{ x: 5.0, y: 1, r: 12 }], backgroundColor: 'rgba(255,128,64,0.85)', borderColor: '#e05500', borderWidth: 3, order: 1 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'top' }, tooltip: { callbacks: { label: function(context) { var p = context.raw; return 'PD: ' + p.x + '% | Cap. Pago: ' + p.y; }, title: function() { return ''; } } } },
+                    scales: {
+                        x: { title: { display: true, text: 'PD Sinacofi (%)', font: { weight: 'bold' } }, min: 0, max: 12, ticks: { stepSize: 2 }, grid: { drawOnChartArea: true, color: 'rgba(0,0,0,0.06)' } },
+                        y: { title: { display: true, text: 'Capacidad de Pago', font: { weight: 'bold' } }, min: 0, max: 4.5, ticks: { stepSize: 1, callback: function(value) { return value <= 4 ? value : ''; } } }
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // CAP RATES CHART
+            var capCtx = document.getElementById('capRatesChart').getContext('2d');
+            new Chart(capCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['PROPIO Cuota', 'PROPIO Arriendo', 'Mercado'],
+                    datasets: [{ data: [9.81, 6.09, 4.83], backgroundColor: ['#FF8040', '#1E487B', '#9ca3af'], borderRadius: 6, barThickness: 50 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(ctx) { return ctx.parsed.y + '%'; } } } },
+                    scales: {
+                        x: { ticks: { color: '#6b7280', font: { size: 11 } }, grid: { display: false } },
+                        y: { ticks: { color: '#9ca3af', font: { size: 10 }, callback: function(v) { return v + '%'; } }, grid: { color: '#f3f4f6' }, min: 0, max: 12 }
+                    }
+                }
+            });
+
+            // ========================================
+            // MOTOR DINAMICO — IPV AJUSTABLE
+            // ========================================
+            var PIE = 107, VALOR_ACTIVO = 4487, META = 897, AMORT_MENSUAL = 13.17, PLAZO_MAX = 60;
+            var INGRESO_UF = 88.3, TASA_ANUAL_BANCO = 0.05, PLAZO_HIPOTECARIO = 360, UMBRAL_BANCO = 0.25;
+            var CUOTA_PROPIO = 32.40, ARRIENDO = CUOTA_PROPIO - AMORT_MENSUAL, UMBRAL_ADMISION = 0.40, N_BUFFER = 2;
+            var ALPHA = 1 + (N_BUFFER * ARRIENDO * 59) / (AMORT_MENSUAL * 900);
+            var ALPHA_MAX = (UMBRAL_ADMISION * INGRESO_UF - ARRIENDO) / AMORT_MENSUAL;
+            var COEF_PEAK = 900 / 59;
+            var B_DECAY = 2 * (ALPHA - 1) * AMORT_MENSUAL / 59;
+            var equityChart = null;
+
+            function calcPlusv(ipv, mes) { return VALOR_ACTIVO * (Math.pow(1 + ipv, mes / 12) - 1); }
+            function calcAmortMes(mes) { return ALPHA * AMORT_MENSUAL - B_DECAY * (mes - 1); }
+            function calcBono(mes) { return PIE + ALPHA * AMORT_MENSUAL * mes - B_DECAY * mes * (mes - 1) / 2; }
+            function calcCuota(mes) { return ARRIENDO + calcAmortMes(mes); }
+            function calcBuffer(mes) { return (ALPHA - 1) * AMORT_MENSUAL * mes * (60 - mes) / 59; }
+            function findExitMes(ipv) { for (var m = 1; m <= PLAZO_MAX; m++) { if (calcBono(m) + calcPlusv(ipv, m) >= META) return m; } return PLAZO_MAX; }
+            function calcDividendo(saldo) { var r = TASA_ANUAL_BANCO / 12; return saldo * r / (1 - Math.pow(1 + r, -PLAZO_HIPOTECARIO)); }
+
+            function recalcular(ipv) {
+                var exitMes = findExitMes(ipv);
+                var bonoAtExit = Math.round(calcBono(exitMes));
+                var plusvAtExit = Math.round(calcPlusv(ipv, exitMes));
+                var totalAtExit = bonoAtExit + plusvAtExit;
+                var pctTotal = ((totalAtExit / META) * 100).toFixed(1);
+                var cuotasAtExit = bonoAtExit - PIE;
+                var bonoOnlyPct = ((bonoAtExit / META) * 100).toFixed(0);
+                var plusvPct = ((plusvAtExit / META) * 100).toFixed(0);
+                var valorEstimado = Math.round(VALOR_ACTIVO * Math.pow(1 + ipv, exitMes / 12));
+                var aniosExit = (exitMes / 12).toFixed(1);
+                var ahorro = PLAZO_MAX - exitMes;
+
+                var pieAcum = Math.min(totalAtExit, valorEstimado);
+                var saldoHip = Math.max(valorEstimado - pieAcum, 0);
+                var dividendo = calcDividendo(saldoHip);
+                var ratioHip = dividendo / INGRESO_UF;
+                var bancoPass = ratioHip <= UMBRAL_BANCO;
+
+                document.getElementById('hipSaldo').textContent = 'UF ' + saldoHip.toLocaleString('es-CL');
+                document.getElementById('hipDividendo').textContent = dividendo.toFixed(1) + ' UF/mes';
+                document.getElementById('hipRatio').textContent = (ratioHip * 100).toFixed(1) + '%';
+                document.getElementById('hipRatio').style.color = bancoPass ? '#22c55e' : '#fbbf24';
+
+                var hipVerdict = document.getElementById('hipVerdict');
+                if (bancoPass) {
+                    hipVerdict.innerHTML = '<span style="color:#22c55e;font-weight:700">\u2713 Califica \u2014 </span><span style="color:#4b5563">Cuota baja de ~33 UF (PROPIO) a ~' + dividendo.toFixed(0) + ' UF (banco). Inclusi\u00f3n financiera.</span>';
+                } else {
+                    hipVerdict.innerHTML = '<span style="color:#fbbf24;font-weight:700">\u26A0 Condicional \u2014 </span><span style="color:#4b5563">Ratio ' + (ratioHip*100).toFixed(1) + '% excede 25%.</span>';
+                }
+
+                document.getElementById('bancoGateLabel').textContent = bancoPass ? 'PASS \u2713' : 'CONDICIONAL \u26A0';
+                document.getElementById('bancoGateBar').style.width = bancoPass ? '90%' : '60%';
+                document.getElementById('bancoGateBar').style.background = bancoPass ? '#22c55e' : '#fbbf24';
+                document.getElementById('bancoGateDetail').textContent = 'Dividendo ' + dividendo.toFixed(0) + ' UF/mes \u2192 ratio ' + (ratioHip*100).toFixed(1) + '% (' + (bancoPass ? '\u2264' : '>') + '25%)';
+
+                document.getElementById('ipvLabel').textContent = (ipv * 100).toFixed(1) + '%';
+                document.getElementById('exitMesDisplay').textContent = 'Mes ' + exitMes;
+
+                var verdictText = document.getElementById('verdictText');
+                var verdictBox = document.getElementById('verdictBox');
+                if (!bancoPass) {
+                    verdictText.textContent = 'ADMITIR CON NOTA'; verdictText.style.color = '#fbbf24';
+                    verdictBox.style.borderColor = '#fbbf24'; verdictBox.style.background = '#fbbf2430';
+                } else {
+                    verdictText.textContent = 'ADMITIR'; verdictText.style.color = '#22c55e';
+                    verdictBox.style.borderColor = '#22c55e'; verdictBox.style.background = '#22c55e30';
+                }
+
+                document.getElementById('bonoPercent').textContent = bonoOnlyPct + '%';
+                document.getElementById('bonoBar').style.width = Math.min(bonoOnlyPct, 100) + '%';
+                document.getElementById('bonoDetail').textContent = 'UF ' + bonoAtExit + '/' + META + ' al mes ' + exitMes + ' \u2014 sin plusval\u00eda cierra al mes 60';
+                document.getElementById('opcionPercent').textContent = '+' + plusvPct + '%';
+                document.getElementById('opcionBar').style.width = Math.min(plusvPct, 100) + '%';
+                document.getElementById('opcionDetail').textContent = 'UF ' + plusvAtExit + ' \u2192 total ' + pctTotal + '% \u2014 acelera exit de mes 60 a ' + exitMes;
+
+                document.getElementById('equityTitle').textContent = 'Ecuaci\u00f3n de Equity al Exit (Mes ' + exitMes + ')';
+                document.getElementById('eqBarLabel').textContent = 'Equity al mes ' + exitMes;
+
+                var totalBar = Math.max(totalAtExit, META);
+                document.getElementById('eqSegPie').style.width = ((PIE / totalBar) * 100).toFixed(0) + '%';
+                document.getElementById('eqSegCuotas').style.width = ((cuotasAtExit / totalBar) * 100).toFixed(0) + '%';
+                document.getElementById('eqSegPlusv').style.width = ((plusvAtExit / totalBar) * 100).toFixed(0) + '%';
+                document.getElementById('eqLegCuotas').textContent = '\u25A0 Cuotas: UF ' + cuotasAtExit;
+                document.getElementById('eqLegPlusv').textContent = '\u25A0 Plusval\u00eda: UF ' + plusvAtExit;
+
+                var checkMark = totalAtExit >= META ? ' \u2713' : '';
+                document.getElementById('eqTotalLabel').textContent = 'Total al mes ' + exitMes;
+                document.getElementById('eqTotalValue').textContent = 'UF ' + totalAtExit + ' / ' + META + checkMark;
+                document.getElementById('eqTotalValue').style.color = totalAtExit >= META ? '#22c55e' : '#fcd34d';
+
+                var bonoAt60 = Math.round(calcBono(60));
+                document.getElementById('eqSinPlusv').textContent = 'UF ' + bonoAt60 + ' (' + ((bonoAt60/META)*100).toFixed(0) + '%) \u2014 cierra al mes 60';
+
+                var calcHtml = [
+                    '<div class="flex justify-between"><span style="color:#6b7280">Strike (precio fijado t0)</span><span style="color:#1f2937">UF 4.487</span></div>',
+                    '<div class="flex justify-between"><span style="color:#6b7280">IPV Padre Hurtado</span><span style="color:#1f2937">~' + (ipv*100).toFixed(1) + '% anual</span></div>',
+                    '<div class="flex justify-between"><span style="color:#6b7280">Plazo al exit</span><span style="color:#1f2937">' + exitMes + ' meses (' + aniosExit + ' a\u00f1os)</span></div>',
+                    '<div class="flex justify-between" style="border-top:1px solid #e5e7eb;padding-top:0.2rem;margin-top:0.2rem"><span style="color:#6b7280">Valor estimado mes ' + exitMes + '</span><span style="color:#1f2937">4.487 \u00d7 ' + (1+ipv).toFixed(2) + '<sup>' + aniosExit + '</sup> = <b>UF ' + valorEstimado.toLocaleString('es-CL') + '</b></span></div>',
+                    '<div class="flex justify-between"><span style="color:#6b7280">Plusval\u00eda = Valor \u2212 Strike</span><span style="color:var(--propio-orange);font-weight:700">UF ' + plusvAtExit + '</span></div>'
+                ].join('');
+                document.getElementById('calcPlusvContainer').innerHTML = calcHtml;
+
+                document.getElementById('tableTitle').textContent = '\u00bfPor qu\u00e9 mes ' + exitMes + '? \u2014 Curva de equity';
+                var checkpoints = [12, 24, 36, exitMes, 60];
+                var unique = []; var seen = {};
+                checkpoints.forEach(function(m) { if (!seen[m]) { seen[m] = true; unique.push(m); } });
+                unique.sort(function(a,b) { return a - b; });
+                var tbody = '';
+                unique.forEach(function(m) {
+                    var b = Math.round(calcBono(m));
+                    var p = Math.round(calcPlusv(ipv, m));
+                    var t = b + p;
+                    var pct = ((t / META) * 100).toFixed(m === exitMes ? 0 : 1);
+                    var isExit = m === exitMes;
+                    var pctColor = t >= META ? '#22c55e' : (t/META > 0.65 ? '#fcd34d' : '#fca5a5');
+                    var style = isExit ? 'font-weight:700;background:#f3f4f6;color:#1f2937' : 'color:' + (m <= 12 ? '#9ca3af' : m <= 24 ? '#6b7280' : m <= 36 ? '#374151' : '#9ca3af');
+                    var prefix = isExit ? '\u2192 ' : '';
+                    var check = (isExit && t >= META) ? ' \u2713' : '';
+                    tbody += '<tr style="' + style + '"><td style="padding:2px 4px">' + prefix + m + '</td><td style="text-align:right">UF ' + b + '</td><td style="text-align:right;' + (isExit ? 'color:var(--propio-orange)' : '') + '">UF ' + p + '</td><td style="text-align:right;' + (isExit && t >= META ? 'color:#22c55e' : '') + '">UF ' + t + '</td><td style="text-align:right;color:' + pctColor + '">' + pct + '%' + check + '</td></tr>';
+                });
+                document.getElementById('equityTableBody').innerHTML = tbody;
+                document.getElementById('tableFooter').textContent = 'Mes ' + exitMes + ' = primer per\u00edodo donde Equity \u2265 Meta. Sin plusval\u00eda, cierra al mes 60.';
+
+                if (bancoPass) {
+                    document.getElementById('verdictSummary').textContent = 'Admitir \u2014 Equity cierra al mes ' + exitMes + ' (' + pctTotal + '%) + banco califica';
+                    document.getElementById('verdictCadena').textContent = 'Estr\u00e9s \u2713 \u2192 Gates \u2713 \u2192 CV \u2713 \u2192 Equity \u2713 \u2192 Banco \u2713';
+                    document.getElementById('verdictCadena').style.color = '#22c55eaa';
+                } else {
+                    document.getElementById('verdictSummary').textContent = 'Admitir con nota \u2014 Equity cierra al mes ' + exitMes + ' pero ratio bancario excede 25%';
+                    document.getElementById('verdictCadena').textContent = 'Estr\u00e9s \u2713 \u2192 Gates \u2713 \u2192 CV \u2713 \u2192 Equity \u2713 \u2192 Banco \u26A0';
+                    document.getElementById('verdictCadena').style.color = '#fbbf24aa';
+                }
+                updateEquityChart(ipv, exitMes);
+            }
+
+            function updateEquityChart(ipv, exitMes) {
+                var meses = [], bonoSolo = [], bonoOpcion = [], metaLine = [];
+                for (var m = 0; m <= 66; m += 3) {
+                    meses.push(m);
+                    var bono = calcBono(m), plusv = calcPlusv(ipv, m);
+                    bonoSolo.push(Math.round(Math.min(bono, 1300)));
+                    bonoOpcion.push(Math.round(bono + plusv));
+                    metaLine.push(META);
+                }
+                var totalAtExit = Math.round(calcBono(exitMes) + calcPlusv(ipv, exitMes));
+                var ahorro = PLAZO_MAX - exitMes;
+                if (equityChart) equityChart.destroy();
+                var eqCtx = document.getElementById('equityTimeChart').getContext('2d');
+                equityChart = new Chart(eqCtx, {
+                    type: 'line',
+                    data: {
+                        labels: meses,
+                        datasets: [
+                            { label: 'Meta 20% (UF 897)', data: metaLine, borderColor: '#ef4444', borderDash: [6,3], borderWidth: 1.5, pointRadius: 0, fill: false },
+                            { label: 'Solo Bono (cuotas)', data: bonoSolo, borderColor: '#3b82f6', borderWidth: 2, pointRadius: 0, fill: false },
+                            { label: 'Bono + Opci\u00f3n (con plusval\u00eda)', data: bonoOpcion, borderColor: '#FF8040', borderWidth: 2.5, pointRadius: 0, fill: false }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: true, position: 'bottom', labels: { color: '#4b5563', font: { size: 9 }, boxWidth: 12, padding: 6 } }, tooltip: { enabled: true } },
+                        scales: {
+                            x: { title: { display: true, text: 'Meses', color: '#6b7280', font: { size: 9 } }, ticks: { color: '#6b7280', font: { size: 8 }, callback: function(val, i) { var m2 = meses[i]; return (m2 % 12 === 0) ? m2 : ''; }, maxRotation: 0 }, grid: { color: '#e5e7eb' } },
+                            y: { title: { display: true, text: 'Equity (UF)', color: '#6b7280', font: { size: 9 } }, ticks: { color: '#6b7280', font: { size: 8 } }, grid: { color: '#e5e7eb' }, min: 0, max: 1800 }
+                        },
+                        animation: {
+                            onComplete: function() {
+                                var chart = this, ctx2 = chart.ctx, xScale = chart.scales.x, yScale = chart.scales.y;
+                                var closestIdx = meses.reduce(function(best, m2, i) { return Math.abs(m2 - exitMes) < Math.abs(meses[best] - exitMes) ? i : best; }, 0);
+                                var frac = (exitMes - meses[closestIdx]) / (meses.length > closestIdx + 1 ? (meses[closestIdx+1] - meses[closestIdx]) : 3);
+                                var xExit = xScale.getPixelForValue(closestIdx) + (xScale.getPixelForValue(closestIdx + 1) - xScale.getPixelForValue(closestIdx)) * frac;
+                                var yExit = yScale.getPixelForValue(totalAtExit);
+                                ctx2.save();
+                                ctx2.beginPath(); ctx2.arc(xExit, yExit, 5, 0, Math.PI*2);
+                                ctx2.fillStyle = '#FF8040'; ctx2.fill(); ctx2.strokeStyle = '#fff'; ctx2.lineWidth = 1.5; ctx2.stroke();
+                                ctx2.fillStyle = '#1f2937'; ctx2.font = 'bold 9px sans-serif'; ctx2.textAlign = 'left';
+                                ctx2.fillText('Exit mes ' + exitMes, xExit + 8, yExit - 6);
+                                ctx2.font = '8px sans-serif'; ctx2.fillText('UF ' + totalAtExit, xExit + 8, yExit + 6);
+                                ctx2.setLineDash([3,3]); ctx2.strokeStyle = '#FF804060';
+                                ctx2.beginPath(); ctx2.moveTo(xExit, yScale.getPixelForValue(0)); ctx2.lineTo(xExit, yExit); ctx2.stroke();
+                                ctx2.restore();
+                                var idx60 = meses.findIndex(function(m2) { return m2 >= 60; });
+                                if (idx60 >= 0) {
+                                    var xPos60 = xScale.getPixelForValue(idx60), yPos60 = yScale.getPixelForValue(META);
+                                    ctx2.save();
+                                    ctx2.beginPath(); ctx2.arc(xPos60, yPos60, 5, 0, Math.PI*2);
+                                    ctx2.fillStyle = '#3b82f6'; ctx2.fill(); ctx2.strokeStyle = '#fff'; ctx2.lineWidth = 1.5; ctx2.stroke();
+                                    ctx2.fillStyle = '#1f2937'; ctx2.font = 'bold 9px sans-serif'; ctx2.textAlign = 'right';
+                                    ctx2.fillText('Exit mes 60', xPos60 - 8, yPos60 - 6);
+                                    ctx2.font = '8px sans-serif'; ctx2.fillText('UF ' + META, xPos60 - 8, yPos60 + 6);
+                                    ctx2.setLineDash([3,3]); ctx2.strokeStyle = '#3b82f660';
+                                    ctx2.beginPath(); ctx2.moveTo(xPos60, yScale.getPixelForValue(0)); ctx2.lineTo(xPos60, yPos60); ctx2.stroke();
+                                    ctx2.restore();
+                                    if (exitMes < 60) {
+                                        var yArrow = yScale.getPixelForValue(META) - 14;
+                                        ctx2.save(); ctx2.strokeStyle = '#9ca3af'; ctx2.lineWidth = 1; ctx2.setLineDash([]);
+                                        ctx2.beginPath(); ctx2.moveTo(xExit, yArrow); ctx2.lineTo(xPos60, yArrow); ctx2.stroke();
+                                        ctx2.beginPath(); ctx2.moveTo(xExit, yArrow-3); ctx2.lineTo(xExit, yArrow+3); ctx2.stroke();
+                                        ctx2.beginPath(); ctx2.moveTo(xPos60, yArrow-3); ctx2.lineTo(xPos60, yArrow+3); ctx2.stroke();
+                                        ctx2.fillStyle = '#4b5563'; ctx2.font = 'bold 8px sans-serif'; ctx2.textAlign = 'center';
+                                        ctx2.fillText(ahorro + ' meses antes', (xExit + xPos60) / 2, yArrow - 4);
+                                        ctx2.restore();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // ========================================
+            // MOTOR DE AMORTIZACION — CHARTS + TABLE
+            // ========================================
+            function initMotorCharts() {
+                var mesesCuota = Array.from({length: 60}, function(_, i) { return i + 1; });
+                var cuotaDec = mesesCuota.map(function(m) { return parseFloat(calcCuota(m).toFixed(3)); });
+                var cuotaFlat = mesesCuota.map(function() { return parseFloat((ARRIENDO + AMORT_MENSUAL).toFixed(3)); });
+                var mesesBuf = Array.from({length: 61}, function(_, i) { return i; });
+                var bufferArr = mesesBuf.map(function(m) { return parseFloat(calcBuffer(m).toFixed(3)); });
+                var hitos = [1, 10, 20, 30, 40, 50, 60];
+                var flat0 = ARRIENDO + AMORT_MENSUAL;
+                var tbody = '';
+                hitos.forEach(function(m) {
+                    var c = calcCuota(m).toFixed(2), d = (calcCuota(m) - flat0).toFixed(2), buf = calcBuffer(m).toFixed(1);
+                    var sign = parseFloat(d) >= 0 ? '+' : '';
+                    var dColor = parseFloat(d) >= 0 ? 'color:#1E487B;font-weight:600' : 'color:#16a34a;font-weight:600';
+                    var rowStyle = m === 30 ? 'font-weight:700;background:#f0f9ff' : '';
+                    var prefix = m === 30 ? '\u2192 ' : '';
+                    tbody += '<tr style="' + rowStyle + '"><td class="py-1">' + prefix + m + '</td><td class="text-right">' + c + ' UF</td><td class="text-right" style="' + dColor + '">' + sign + d + '</td><td class="text-right">' + buf + ' UF</td></tr>';
+                });
+                document.getElementById('motorTableBody').innerHTML = tbody;
+
+                var ctxCuota = document.getElementById('motorCuotaChart').getContext('2d');
+                motorCharts.push(new Chart(ctxCuota, {
+                    type: 'line',
+                    data: {
+                        labels: mesesCuota,
+                        datasets: [
+                            { label: 'Cuota plana (ref)', data: cuotaFlat, borderColor: '#1E487B', borderDash: [6,3], borderWidth: 1.5, pointRadius: 0, fill: false },
+                            { label: 'Cuota decreciente (\u03b1=1.191)', data: cuotaDec, borderColor: '#FF8040', borderWidth: 2.5, pointRadius: 0,
+                              fill: { target: 0, above: 'rgba(255,128,64,0.10)', below: 'rgba(30,72,123,0.06)' } }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12, padding: 6 } }, tooltip: { callbacks: { label: function(ctx) { return ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(2) + ' UF'; } } } },
+                        scales: {
+                            x: { title: { display: true, text: 'Mes', font: { size: 10 } }, ticks: { font: { size: 9 }, callback: function(v, i) { return (mesesCuota[i] === 1 || mesesCuota[i] % 12 === 0 ? mesesCuota[i] : ''); }, maxRotation: 0 }, grid: { color: '#f3f4f6' } },
+                            y: { title: { display: true, text: 'Cuota (UF)', font: { size: 10 } }, ticks: { font: { size: 9 }, callback: function(v) { return v.toFixed(0) + ' UF'; } }, grid: { color: '#f3f4f6' }, min: 27, max: 37 }
+                        }
+                    }
+                }));
+
+                var ctxBuf = document.getElementById('motorBufferChart').getContext('2d');
+                motorCharts.push(new Chart(ctxBuf, {
+                    type: 'line',
+                    data: {
+                        labels: mesesBuf,
+                        datasets: [{ label: 'Buffer acumulado (UF)', data: bufferArr, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.15)', borderWidth: 2, pointRadius: 0, fill: true }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(ctx) { return 'Buffer mes ' + ctx.label + ': ' + ctx.parsed.y.toFixed(1) + ' UF'; } } } },
+                        scales: {
+                            x: { title: { display: true, text: 'Mes', font: { size: 10 } }, ticks: { font: { size: 9 }, callback: function(v, i) { return (mesesBuf[i] % 12 === 0 ? mesesBuf[i] : ''); }, maxRotation: 0 }, grid: { color: '#f3f4f6' } },
+                            y: { title: { display: true, text: 'Buffer (UF)', font: { size: 10 } }, ticks: { font: { size: 9 } }, grid: { color: '#f3f4f6' }, min: 0, max: 45 }
+                        },
+                        animation: {
+                            onComplete: function() {
+                                var ch = this, c2 = ch.ctx, xSc = ch.scales.x, ySc = ch.scales.y;
+                                var pidx = mesesBuf.indexOf(30);
+                                if (pidx < 0) return;
+                                var xP = xSc.getPixelForValue(pidx), yP = ySc.getPixelForValue(bufferArr[pidx]);
+                                c2.save();
+                                c2.beginPath(); c2.arc(xP, yP, 5, 0, Math.PI*2);
+                                c2.fillStyle = '#22c55e'; c2.fill(); c2.strokeStyle = '#fff'; c2.lineWidth = 1.5; c2.stroke();
+                                c2.fillStyle = '#374151'; c2.font = 'bold 9px sans-serif'; c2.textAlign = 'center';
+                                c2.fillText('Peak mes 30', xP, yP - 12);
+                                c2.font = '8px sans-serif'; c2.fillText(bufferArr[pidx].toFixed(1) + ' UF', xP, yP - 3);
+                                c2.restore();
+                            }
+                        }
+                    }
+                }));
+            }
+            window.initMotorCharts = initMotorCharts;
+
+            // Slider listener
+            document.getElementById('ipvSlider').addEventListener('input', function() {
+                recalcular(parseFloat(this.value) / 100);
+            });
+
+            // Initial render
+            recalcular(0.03);
+        });
+
+        // ========================================
+        // SIMILARITY SCATTER CHART
+        // ========================================
+        (function() {
+            var portfolio = [
+                {nombre:"Carlos Mendoza",pd:0.042,ratio:0.351,cv:0.009},
+                {nombre:"Mar\u00eda Gonz\u00e1lez",pd:0.058,ratio:0.382,cv:0.012},
+                {nombre:"Roberto Silva",pd:0.061,ratio:0.335,cv:0.022},
+                {nombre:"Ana Rojas",pd:0.039,ratio:0.401,cv:0.005},
+                {nombre:"Felipe Araya",pd:0.072,ratio:0.368,cv:0.018},
+                {nombre:"Daniela Torres",pd:0.15,ratio:0.42,cv:0.035},
+                {nombre:"Jorge Mu\u00f1oz",pd:0.22,ratio:0.45,cv:0.04},
+                {nombre:"Catalina Vera",pd:0.08,ratio:0.31,cv:0.015},
+                {nombre:"Mart\u00edn P\u00e9rez",pd:0.35,ratio:0.38,cv:0.055},
+                {nombre:"Valentina R\u00edos",pd:0.12,ratio:0.29,cv:0.028},
+                {nombre:"Sebasti\u00e1n L\u00f3pez",pd:0.45,ratio:0.52,cv:0.062},
+                {nombre:"Francisca D\u00edaz",pd:0.03,ratio:0.25,cv:0.008},
+                {nombre:"Tom\u00e1s Herrera",pd:0.18,ratio:0.41,cv:0.042},
+                {nombre:"Isidora Soto",pd:0.55,ratio:0.48,cv:0.071},
+                {nombre:"Nicol\u00e1s Fuentes",pd:0.09,ratio:0.33,cv:0.019},
+                {nombre:"Camila Jara",pd:0.28,ratio:0.39,cv:0.048},
+                {nombre:"Mateo Reyes",pd:0.065,ratio:0.36,cv:0.014},
+                {nombre:"Antonia Castillo",pd:0.41,ratio:0.44,cv:0.058},
+                {nombre:"Lucas Morales",pd:0.11,ratio:0.28,cv:0.021},
+                {nombre:"Emilia Vargas",pd:0.32,ratio:0.51,cv:0.065}
+            ];
+            var topFive = [
+                {nombre:"Carlos Mendoza",pd:0.042,ratio:0.351,cv:0.009},
+                {nombre:"Mar\u00eda Gonz\u00e1lez",pd:0.058,ratio:0.382,cv:0.012},
+                {nombre:"Roberto Silva",pd:0.061,ratio:0.335,cv:0.022},
+                {nombre:"Ana Rojas",pd:0.039,ratio:0.401,cv:0.005},
+                {nombre:"Felipe Araya",pd:0.072,ratio:0.368,cv:0.018}
+            ];
+            var postulante = {nombre:"Andr\u00e9s Montecinos",pd:0.05,ratio:0.367,cv:0.006};
+            var topNames = topFive.map(function(c) { return c.nombre; });
+            var resto = portfolio.filter(function(c) { return !topNames.includes(c.nombre) && c.ratio; });
+
+            var simCtx = document.getElementById('simScatterChart');
+            if (simCtx) {
+                new Chart(simCtx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [
+                            { label: 'Portfolio', data: resto.map(function(c) { return { x: c.pd * 100, y: c.ratio * 100, label: c.nombre }; }), backgroundColor: 'rgba(148,163,184,0.4)', borderColor: 'rgba(148,163,184,0.7)', borderWidth: 1, pointRadius: 5 },
+                            { label: 'Top 5 Similares', data: topFive.map(function(c) { return { x: c.pd * 100, y: c.ratio ? c.ratio * 100 : 0, label: c.nombre }; }), backgroundColor: 'rgba(59,130,246,0.6)', borderColor: 'rgba(59,130,246,1)', borderWidth: 1.5, pointRadius: 6 },
+                            { label: 'Postulante', data: [{ x: postulante.pd * 100, y: postulante.ratio ? postulante.ratio * 100 : 0, label: postulante.nombre }], backgroundColor: 'rgba(255,128,64,0.8)', borderColor: 'rgba(255,128,64,1)', borderWidth: 3, pointRadius: 10, pointStyle: 'star' }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { tooltip: { callbacks: { label: function(ctx) { return ctx.raw.label + ': PD ' + ctx.raw.x.toFixed(1) + '%, C/I ' + ctx.raw.y.toFixed(1) + '%'; } } }, legend: { position: 'bottom', labels: { usePointStyle: true, padding: 16, font: { size: 12 } } } },
+                        scales: {
+                            x: { title: { display: true, text: 'PD Sinacofi (%)', font: { weight: 'bold' } }, min: 0, max: 90, grid: { color: '#f0f1f5' } },
+                            y: { title: { display: true, text: 'Cuota / Ingreso (%)', font: { weight: 'bold' } }, min: 15, max: 60, grid: { color: '#f0f1f5' } }
+                        }
+                    }
+                });
+            }
+        })();
+    </script>
+        {% endif %}
+    </main>
+</body>
+</html>

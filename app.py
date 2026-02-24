@@ -185,7 +185,7 @@ Responde SOLO con JSON: {{"nivel": <int>, "narrativa": "<texto>"}}"""
 # ---------------------------------------------------------------------------
 @app.route("/")
 def index():
-    return render_template("evaluacion_comite.html", resultado=None, form=None)
+    return render_template("evaluacion_comite.html", resultado=None, form={})
 
 
 def parse_activo_fields(form):
@@ -223,16 +223,40 @@ def parse_activo_fields(form):
 def evaluar():
     form = request.form
 
-    # Parse core fields
+    # Parse core fields — ALL metrics are CALCULATED from raw data
     try:
         nombre = form.get("nombre", "Postulante").strip() or "Postulante"
         pd = float(form["pd"])
         pie = float(form["pie"])
-        ratio_raw = form.get("ratio", "").strip()
-        ratio = float(ratio_raw) if ratio_raw else None
         tipo = int(form["tipo"])
-        cr_acido = float(form["cr_acido"])
-        cv = float(form["cv"])
+
+        # Raw inputs — financieros
+        ingreso_bruto = float(form["ingreso_bruto"])
+        cuota_mensual = float(form["cuota_mensual"])
+        min_ingreso_raw = form.get("min_ingreso", "").strip()
+        min_ingreso = float(min_ingreso_raw) if min_ingreso_raw else ingreso_bruto
+
+        # Raw inputs — sueldos líquidos de liquidaciones (para CV)
+        sueldos_raw = form.get("sueldos_liquidos", "").strip()
+        if sueldos_raw:
+            sueldos = [float(s.strip()) for s in sueldos_raw.split(",") if s.strip()]
+        else:
+            sueldos = []
+
+        # CALCULATED: CV = std / mean de sueldos líquidos
+        if len(sueldos) >= 2:
+            mean_s = sum(sueldos) / len(sueldos)
+            std_s = (sum((x - mean_s) ** 2 for x in sueldos) / len(sueldos)) ** 0.5
+            cv = std_s / mean_s if mean_s > 0 else 0.0
+        elif len(sueldos) == 1:
+            cv = 0.0
+        else:
+            cv = 0.0  # sin liquidaciones → comité decide
+
+        # CALCULATED: C/I y CR ácido
+        ratio = cuota_mensual / ingreso_bruto if ingreso_bruto > 0 else None
+        cr_acido = min_ingreso / cuota_mensual if cuota_mensual > 0 else 0.0
+
     except (ValueError, KeyError) as e:
         return render_template("evaluacion_comite.html", resultado=None, form=form,
                                error=f"Error en datos: {e}")
